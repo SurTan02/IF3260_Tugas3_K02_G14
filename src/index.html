@@ -40,13 +40,17 @@
                     <i class="fa fa-gear fa-spin" style="font-size:25px"></i>
                     Controls
                 </h2>
-                
                 <div>
-					<label for="shader-state" class="control-label">Shader enabled </label>
-					<input type="checkbox" name="shader-state" id="shader-state" unchecked>
-					<label for="animation-state" class="control-label">Animation</label>
-					<input type="checkbox" name="animation-state" id="animation-state">
-				</div>
+                    <div style="display: flex; vertical-align: middle; padding-bottom: 5px;">
+                        <label for="shader-state" class="control-label">Shader enabled </label>
+                        <input type="checkbox" name="shader-state" id="shader-state" unchecked>
+                    </div>
+                    
+                    <div style="display: flex; vertical-align: middle;">
+                        <label for="animation-state" class="control-label">Animation</label>
+                        <input type="checkbox" name="animation-state" id="animation-state">
+                    </div>
+                </div>
                 <br>
 				<div style="padding-bottom:0">
 					<span class="control-label">Projection</span>
@@ -64,6 +68,26 @@
                         <label>
                           <input type="radio" name="projection-option" value="oblique" id="oblique">
                           Oblique
+                        </label>
+                      </form>
+				</div>
+                <br>
+                <div style="padding-bottom:0">
+					<span class="control-label">Texture</span>
+					<form class ="input-container" id="texture-option">
+                        <label>
+                          <input type="radio" name="texture-option" value="custom" id="custom" checked>
+                          Custom
+                        </label>
+                        <br>
+                        <label>
+                          <input type="radio" name="texture-option" value="reflective" id="reflective">
+                          Reflective
+                        </label>
+                        <br>
+                        <label>
+                          <input type="radio" name="texture-option" value="bump" id="bump">
+                          Bump
                         </label>
                       </form>
 				</div>
@@ -115,39 +139,6 @@
                     </div>
 				</div>
                 <br>
-                <div>
-					<span class="control-label">Shading Control</span>
-					<div class="input-container">
-                        <span class="constanta-label">Constant</span><br>
-                        
-                        <label for="ambientField">Ambient Reflection (ka): </label>
-                        <input type="range" min="0" max="1" step="0.01" value="1" class="slider" id="ambientField" name="ambientField"><br>
-                        <!-- <label for="ambientColorField">Ambient Color</label>
-                        <input type="color" id="ambientColorField" name="ambientColorField" value="#ff0000" /><br> -->
-                        
-                        <label for="diffuseField">Diffuse Reflection (kd): </label>
-                        <input type="range" min="0" max="1" step="0.01" value="1" class="slider" id="diffuseField" name="diffuseField"><br>
-                        <!-- <label for="diffuseColorField">Diffuse Color</label>
-                        <input type="color" id="diffuseColorField" name="diffuseColorField" value="#00ff00" /><br> -->
-                        
-                        <label for="specularField">Specular Reflection (ks): </label>
-                        <input type="range" min="0" max="1" step="0.01" value="1" class="slider" id="specularField" name="specularField"><br>
-                        <!-- <label for="specularColorField">Specular Color</label>
-                        <input type="color" id="specularColorField" name="specularColorField" value="#0000ff" /><br> -->
-                        
-                        <label for="shininessField">Shininess : </label>
-                        <input type="range" min="0" max="3" step="0.1" value="0" class="slider" id="shininessField" name="specularField"><br><br>
-                    
-                        <span class="constanta-label">Light Source</span><br>
-                        
-                        <label for="lxField">lx: </label>
-                        <input type="range" min="-10" max="10" step="0.1" value="1.0" class="slider" id="lxField" name="lxField"><br>
-                        <label for="lyField">ly: </label>
-                        <input type="range" min="-10" max="10" step="0.1" value="1.0" class="slider" id="lyField" name="lxField"><br>
-                        <label for="lzField">lz: </label>
-                        <input type="range" min="-10" max="10" step="0.1" value="1.0" class="slider" id="lzField" name="lxField"><br>
-                    </div>
-				</div>
                 <div>
                     <br><input type="button" class="resetbutton" id="resetbutton" name="resetbutton" value="Reset Default View" >
                     <input type="button" class="savebutton" id="savebutton" name="savebutton" value="Save Model" >

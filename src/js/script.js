@@ -9,18 +9,12 @@ const slider_sy = document.getElementById("syField");
 const slider_yc = document.getElementById("yCamera");
 const slider_sz = document.getElementById("szField");
 const slider_zc = document.getElementById("zoomCamera");
-const slider_ar = document.getElementById("ambientField");
-const slider_dr = document.getElementById("diffuseField");
-const slider_sr = document.getElementById("specularField");
-const slider_sh = document.getElementById("shininessField");
-const slider_lx = document.getElementById("lxField");
-const slider_ly = document.getElementById("lyField");
-const slider_lz = document.getElementById("lzField");
 
 const loader = document.getElementById("load");
 const resetCamera = document.getElementById("resetbutton");
 const save_btn = document.getElementById("savebutton");
 const projection_opt = document.getElementById("projection-option");
+const texture_opt = document.getElementById("texture-option");
 const animation_check = document.getElementById("animation-state");
 const shading_check = document.getElementById("shader-state");
 
@@ -35,13 +29,6 @@ var sy = 1;
 var sz = 1;
 var yc = 0;
 var zc = 1;
-var ar = 1.0;
-var dr = 1.0;
-var sr = 1.0;
-var sh = 0.0;
-var lx = 1.0;
-var ly = 1.0;
-var lz = 1.0;
 
 slider_tx.oninput = function () {
 	tx = this.value;
@@ -87,29 +74,6 @@ slider_zc.oninput = function () {
 	zc = this.value;
 };
 
-slider_ar.oninput = function () {
-	ar = this.value;
-};
-slider_dr.oninput = function () {
-	dr = this.value;
-};
-slider_sr.oninput = function () {
-	sr = this.value;
-};
-slider_sh.oninput = function () {
-	sh = this.value;
-};
-slider_lx.oninput = function () {
-	lx = this.value;
-};
-slider_ly.oninput = function () {
-	ly = this.value;
-};
-slider_lz.oninput = function () {
-	lz = this.value;
-};
-
-
 loader.onchange = function (e) {
 	resetValue();
 
@@ -142,13 +106,6 @@ function resetValue() {
 	sz = 1;
 	yc = 0;
 	zc = 1;
-	ar = 1.0;
-	dr = 1.0;
-	sr = 1.0;
-	sh = 0.0;
-	lx = 1.0;
-	ly = 1.0;
-	lz = 1.0;
 
 	slider_tx.value = tx;
 	slider_ty.value = ty;
@@ -161,16 +118,11 @@ function resetValue() {
 	slider_rz.value = rz;
 	slider_yc.value = yc;
 	slider_zc.value = zc;
-	slider_ar.value = ar;
-	slider_dr.value = dr;
-	slider_sr.value = sr;
-	slider_sh.value = sh;
-	slider_lx.value = lx;
-	slider_ly.value = ly;
-	slider_lz.value = lz;
 	projection_opt.value = "perspective";
 	const selectedProjection = document.getElementById("perspective");
 	selectedProjection.checked = true;
+	const selectedTexture = document.getElementById("custom");
+	selectedTexture.checked = true;
 	shading_check.checked = false;
 	animation_check.checked = false;
 }
@@ -180,4 +132,12 @@ projection_opt.onchange = function () {
 		'input[name="projection-option"]:checked'
 	).value;
 	this.value = selectedProjection;
+};
+
+texture_opt.onchange = function () {
+	const selectedTexture = document.querySelector(
+		'input[name="texture-option"]:checked'
+	).value;
+	this.value = selectedTexture;
+	console.log("aa", selectedTexture);
 };
