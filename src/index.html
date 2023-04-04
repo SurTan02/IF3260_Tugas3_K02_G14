@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>3D Web GL Hollow Object</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" type="text/css" href="style.css" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link href="https://fonts.cdnfonts.com/css/sf-compact-display" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Lato&display=swap" rel="stylesheet">
+        
+        <script src="js/gl-matrix-min.js"></script>
+        <script src="js/utils.js"></script>
+       
+    </head>
+	<body>
+		<main id="app">
+            <div id="left-pane" class="pane">
+				<h1 style="text-align: center;">3D WebGL</br>
+                    <i class="fa fa-snapchat-ghost" aria-hidden="true"></i>Hollow Object
+                </h1>
+                <h2>Load Object</h2>
+                <input id="load" type="file" accept=".json"><br>
+                
+                <h2>Description</h2>
+                <p style="font-size: 14px;">Deskripsi</p>
+                <h2>Help</h2>
+                <div style="font-size: 12px;">
+                    <p>1. <strong>Load Object 3d.</strong>Deskripspinya</p>
+                    
+                </div>
+
+			</div>
+            <canvas id="canvas" width="1280px" height="720px"></canvas>
+			<!-- <canvas id="canvas"></canvas> -->
+			<div class="pane">
+                <h2 style="text-align: center; border-bottom: 1px solid #7e78be;">
+                    <i class="fa fa-gear fa-spin" style="font-size:25px"></i>
+                    Controls
+                </h2>
+                
+                <div>
+					<label for="shader-state" class="control-label">Shader enabled </label>
+					<input type="checkbox" name="shader-state" id="shader-state" unchecked>
+					<label for="animation-state" class="control-label">Animation</label>
+					<input type="checkbox" name="animation-state" id="animation-state">
+				</div>
+                <br>
+				<div style="padding-bottom:0">
+					<span class="control-label">Projection</span>
+					<form class ="input-container" id="projection-option">
+                        <label>
+                          <input type="radio" name="projection-option" value="perspective" id="perspective" checked>
+                          Perspective
+                        </label>
+                        <br>
+                        <label>
+                          <input type="radio" name="projection-option" value="orthographic" id="orthographic">
+                          Orthographic
+                        </label>
+                        <br>
+                        <label>
+                          <input type="radio" name="projection-option" value="oblique" id="oblique">
+                          Oblique
+                        </label>
+                      </form>
+				</div>
+                <br>
+				<div>
+					<span class="control-label">Translation Slider</span>
+					<div class="input-container">
+                        <label for="txField">tx: </label>
+                        <input type="range" min="-6" max="6" step="0.01" value="0" class="slider" id="txField" name="txField"><br>
+                        <label for="tyField">ty: </label>
+                        <input type="range" min="-6" max="6" step="0.01" value="0" class="slider" id="tyField" name="tyField"><br>
+                        <label for="tzField">tz: </label>
+                        <input type="range" min="-6" max="6" step="0.01" value="0" class="slider" id="tzField" name="tzField"><br>
+                    </div>
+				</div>
+                <br>
+				<div>
+					<span class="control-label">Rotation Slider</span>
+                    <div class="input-container">
+                        <label for="rxField">rx: </label>
+                        <input type="range" min="0" max="360" value="0" class="slider" id="rxField" name="rxField"><br>
+                        <label for="ryField">ry: </label>
+                        <input type="range" min="0" max="360" value="0" class="slider" id="ryField" name="ryField"><br>
+                        <label for="rzField">rz: </label>
+                        <input type="range" min="0" max="360" value="0" class="slider" id="rzField" name="rzField"><br>
+                    </div>
+				</div>
+                <br>
+				<div>
+					<span class="control-label">Scale Slider</span>
+                    <div class="input-container">
+                        <label for="sxField">sx: </label>
+                        <input type="range" min="0" max="2" step="0.01" value="1" class="slider" id="sxField" name="sxField"><br>
+                        <label for="syField">sy: </label>
+                        <input type="range" min="0" max="2" step="0.01" value="1" class="slider" id="syField" name="syField"><br>
+                        <label for="szField">sz: </label>
+                        <input type="range" min="0" max="2" step="0.01" value="1" class="slider" id="szField" name="szField"><br>
+                    </div>
+				</div>
+                <br>
+				<div>
+					<span class="control-label">Camera Slider</span>
+                    <div class="input-container">
+                        <label for="yCamera">Camera Angle: </label>
+                        <input type="range" min="-360" max="360" step="1" value="0" class="slider" id="yCamera" name="yCamera"><br>
+                        <label for="zoomCamera">Zoom Camera: </label>
+                        <input type="range" min="0" max="2" step="0.01" value="1" class="slider" id="zoomCamera" name="zoomCamera"><br>
+                        
+                    </div>
+				</div>
+                <br>
+                <div>
+					<span class="control-label">Shading Control</span>
+					<div class="input-container">
+                        <span class="constanta-label">Constant</span><br>
+                        
+                        <label for="ambientField">Ambient Reflection (ka): </label>
+                        <input type="range" min="0" max="1" step="0.01" value="1" class="slider" id="ambientField" name="ambientField"><br>
+                        <!-- <label for="ambientColorField">Ambient Color</label>
+                        <input type="color" id="ambientColorField" name="ambientColorField" value="#ff0000" /><br> -->
+                        
+                        <label for="diffuseField">Diffuse Reflection (kd): </label>
+                        <input type="range" min="0" max="1" step="0.01" value="1" class="slider" id="diffuseField" name="diffuseField"><br>
+                        <!-- <label for="diffuseColorField">Diffuse Color</label>
+                        <input type="color" id="diffuseColorField" name="diffuseColorField" value="#00ff00" /><br> -->
+                        
+                        <label for="specularField">Specular Reflection (ks): </label>
+                        <input type="range" min="0" max="1" step="0.01" value="1" class="slider" id="specularField" name="specularField"><br>
+                        <!-- <label for="specularColorField">Specular Color</label>
+                        <input type="color" id="specularColorField" name="specularColorField" value="#0000ff" /><br> -->
+                        
+                        <label for="shininessField">Shininess : </label>
+                        <input type="range" min="0" max="3" step="0.1" value="0" class="slider" id="shininessField" name="specularField"><br><br>
+                    
+                        <span class="constanta-label">Light Source</span><br>
+                        
+                        <label for="lxField">lx: </label>
+                        <input type="range" min="-10" max="10" step="0.1" value="1.0" class="slider" id="lxField" name="lxField"><br>
+                        <label for="lyField">ly: </label>
+                        <input type="range" min="-10" max="10" step="0.1" value="1.0" class="slider" id="lyField" name="lxField"><br>
+                        <label for="lzField">lz: </label>
+                        <input type="range" min="-10" max="10" step="0.1" value="1.0" class="slider" id="lzField" name="lxField"><br>
+                    </div>
+				</div>
+                <div>
+                    <br><input type="button" class="resetbutton" id="resetbutton" name="resetbutton" value="Reset Default View" >
+                    <input type="button" class="savebutton" id="savebutton" name="savebutton" value="Save Model" >
+                </div>
+                <br>
+			</div>		
+		</main>
+	</body>
+    <script type="text/javascript" src="js/script.js"></script>
+    <script type="text/javascript" src="js/draw.js"></script>
+</html>
+
