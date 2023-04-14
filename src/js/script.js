@@ -4,6 +4,12 @@ const slider_tz = document.getElementById("tzField");
 const slider_rx = document.getElementById("rxField");
 const slider_ry = document.getElementById("ryField");
 const slider_rz = document.getElementById("rzField");
+const slider_part_tx = document.getElementById("part-rx");
+const slider_part_ty = document.getElementById("part-ty");
+const slider_part_tz = document.getElementById("part-tz");
+const slider_part_rx = document.getElementById("part-rx");
+const slider_part_ry = document.getElementById("part-ry");
+const slider_part_rz = document.getElementById("part-rz");
 const slider_sx = document.getElementById("sxField");
 const slider_sy = document.getElementById("syField");
 const slider_yc = document.getElementById("yCamera");
@@ -24,35 +30,31 @@ var tz = 0;
 var rx = 5.78;
 var ry = 3.8;
 var rz = 0;
+var part_tx = 0;
+var part_ty = 0;
+var part_tz = 0;
+var part_rx = 5.78;
+var part_ry = 3.8;
+var part_rz = 0;
 var sx = 1;
 var sy = 1;
 var sz = 1;
 var yc = 0;
 var zc = 1;
 
-slider_tx.oninput = function () {
-	tx = this.value;
-};
+slider_tx.oninput = function () {tx = this.value};
+slider_ty.oninput = function () {ty = this.value};
+slider_tz.oninput = function () {tz = this.value};
+slider_rx.oninput = function () {rx = this.value};
+slider_ry.oninput = function () {ry = this.value};
+slider_rz.oninput = function () {rz = this.value};
 
-slider_ty.oninput = function () {
-	ty = this.value;
-};
-
-slider_tz.oninput = function () {
-	tz = this.value;
-};
-
-slider_rx.oninput = function () {
-	rx = this.value;
-};
-
-slider_ry.oninput = function () {
-	ry = this.value;
-};
-
-slider_rz.oninput = function () {
-	rz = this.value;
-};
+slider_part_tx.oninput = function () {part_tx = this.value};
+slider_part_ty.oninput = function () {part_ty = this.value};
+slider_part_tz.oninput = function () {part_tz = this.value};
+slider_part_rx.oninput = function () {part_rx = this.value};
+slider_part_ry.oninput = function () {part_ry = this.value};
+slider_part_rz.oninput = function () {part_rz = this.value};
 
 slider_sx.oninput = function () {
 	sx = this.value;
