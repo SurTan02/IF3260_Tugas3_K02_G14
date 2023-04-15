@@ -1,37 +1,31 @@
 
+const sliders= document.getElementsByClassName("slider");
 
-
+let selectedPart = ""
+var allObjs = {};
+var allObjNames = [];
+jsonObjTes.parts.forEach(part => {
+	if (part.name == jsonObjTes.root_name) {
+		// add root obj to the first index
+		allObjNames.unshift(part.name);
+		allObjs[part.name] = part;
+		}
+		else {
+		allObjNames.push(part.name);
+		allObjs[part.name] = part;
+		}
+});
+console.log(allObjs)
 main(jsonObjTes)
 
 function main(jsonObj) {
 	
+	
+	
 
-	var allObjs = {};
-	var allObjNames = [];
-	jsonObj.parts.forEach(part => {
-		if (part.name == jsonObj.root_name) {
-			// add root obj to the first index
-			allObjNames.unshift(part.name);
-			allObjs[part.name] = part;
-		  }
-		  else {
-			allObjNames.push(part.name);
-			allObjs[part.name] = part;
-		  }
-		
+	allObjNames.forEach(part => {
+		tree_controller.innerHTML += `<button onclick="selectPart(event)" name=${part}> ${part}</button>`
 	});
-	// GATAU KALAU DI SCRIPT SLIDENRYA GA SESUAI, JADI LETAK DISINi
-	slider_tx.value = tx;
-	slider_ty.value = ty;
-	slider_ty.value = ty;
-	slider_sx.value = sx;
-	slider_sy.value = sy;
-	slider_sz.value = sz;
-	slider_rx.value = rx;
-	slider_ry.value = ry;
-	slider_rz.value = rz;
-	slider_yc.value = yc;
-	slider_zc.value = zc;
 
 	const canvas = document.getElementById("canvas");
 	const gl = canvas.getContext("webgl");
@@ -128,26 +122,31 @@ function main(jsonObj) {
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LEQUAL);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-		// PROJECTION
-		var projectionMatrix = getProjection(projection_opt.value)
-
-		const translateMatrix = [
-			1, 0, 0, 0,
-			0, 1, 0, 0,
-			0, 0, 1, 0,
-			0, 0, -10, 1
-		];
-		projectionMatrix = multiply(translateMatrix, projectionMatrix)
-		
-		
-		drawObject(gl, program, allObjs[allObjNames[0]], projectionMatrix, allObjs);
+	
+		drawObject(gl, program, allObjs[allObjNames[0]], allObjs, [rx, ry, rz], allObjNames);
 		
 		requestAnimationFrame(render);
 	}
 }
 
-function drawObject(gl, program, jsonObj, projectionMatrix, allObjs) {	
+function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames) {	
+	tx = slider_tx.value;
+	ty = slider_ty.value;
+	ty = slider_ty.value;
+	sx = slider_sx.value;
+	sy = slider_sy.value;
+	sz = slider_sz.value;
+	rx = slider_rx.value;
+	ry = slider_ry.value;
+	rz = slider_rz.value;
+	yc = slider_yc.value;
+	zc = slider_zc.value;
+	part_tx = slider_part_tx.value;
+	part_ty = slider_part_ty.value;
+	part_tz = slider_part_tz.value;
+	part_rx = slider_part_rx.value;
+	part_ry = slider_part_ry.value;
+	part_rz = slider_part_rz.value;
 	gl.useProgram(program);
 
 	// LOAD OBJECT
@@ -157,30 +156,45 @@ function drawObject(gl, program, jsonObj, projectionMatrix, allObjs) {
 		jsonObj.indices,
 		jsonObj.color
 	);
+	// PROJECTION
+	var projectionMatrix = getProjection(projection_opt.value)
+	const translateMatrix = [
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, -10, 1
+	];
+	projectionMatrix = multiply(translateMatrix, projectionMatrix)
 
+	var pass_rotation = parent_rotation
+	
 	var modelViewMatrix = jsonObj.modelViewMatrix? jsonObj.modelViewMatrix : m4();
 	// CAMERA ANGLE
-	ChangedprojectionMatrix = rotationY(projectionMatrix, yc);
+	var newProjection = rotationY(projectionMatrix, yc/180 * Math.PI);
 
 	// CAMERA ZOOM
 	modelViewMatrix = scale(modelViewMatrix, zc, zc, zc);
 
 	// ROTASI
 	var cameraMatrix = m4();
-	cameraMatrix = xRotate(cameraMatrix, rx/180 * Math.PI);
-	cameraMatrix = yRotate(cameraMatrix, ry/180 * Math.PI);
-	cameraMatrix = zRotate(cameraMatrix, rz/180 * Math.PI);
+	cameraMatrix = xRotate(cameraMatrix, pass_rotation[0] /180 * Math.PI);
+	cameraMatrix = yRotate(cameraMatrix, pass_rotation[1] /180 * Math.PI);
+	cameraMatrix = zRotate(cameraMatrix, pass_rotation[2] /180 * Math.PI);
 
-	if (jsonObj.name == "left-arm"){
-		var x_part = (part_rx/100) * jsonObj["x_rotate"][2] - jsonObj["x_rotate"][1] 
-		var y_part = (part_ry/100) * jsonObj["y_rotate"][2] - jsonObj["y_rotate"][1] 
-		// console.log((y_part ))
-		// cameraMatrix = translate(cameraMatrix, jsonObj["rotate_coord"][0],jsonObj["rotate_coord"][1], jsonObj["rotate_coord"][2])
-		cameraMatrix = xRotate(cameraMatrix,  x_part/180 * Math.PI);
-    	cameraMatrix = yRotate(cameraMatrix, y_part/180 * Math.PI);
-    	cameraMatrix = zRotate(cameraMatrix, part_rz/180 * Math.PI);
-		// cameraMatrix = translate(cameraMatrix, -jsonObj["rotate_coord"][0],-jsonObj["rotate_coord"][1], -jsonObj["rotate_coord"][2])
+	if (jsonObj.name == selectedPart){
+		jsonObj["rotation"] = [part_rx, part_ry, part_rz]
+		// if (jsonObj.children.length > 0)
+		if (jsonObj.name != allObjNames[0])
+		pass_rotation = jsonObj["rotation"]
 	}
+	var rotX = jsonObj["rotation"][0]
+	var rotY = jsonObj["rotation"][1]
+	var rotZ = jsonObj["rotation"][2]
+
+	cameraMatrix = xRotate(cameraMatrix, rotX/180 * Math.PI);
+    cameraMatrix = yRotate(cameraMatrix, rotY/180 * Math.PI);
+    cameraMatrix = zRotate(cameraMatrix, rotZ/180 * Math.PI);
+	
 
 	var viewMatrix = inverse(cameraMatrix);
 	
@@ -201,7 +215,7 @@ function drawObject(gl, program, jsonObj, projectionMatrix, allObjs) {
 	// // SAVE BUTTON
 	// save_btn.onclick = () => saveObjectfunction(jsonObj, modelViewMatrix)
 	
-  {
+  	{
 		const vertexPosition = gl.getAttribLocation(program, "aVertexPosition");
 		gl.bindBuffer(gl.ARRAY_BUFFER, model.position);
 		gl.vertexAttribPointer(vertexPosition, 3, gl.FLOAT, false, 0, 0);
@@ -214,11 +228,9 @@ function drawObject(gl, program, jsonObj, projectionMatrix, allObjs) {
 		gl.vertexAttribPointer(aVertexColor, 3, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(aVertexColor);
 	}
-    
-	//
 
 	const uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
-	gl.uniformMatrix4fv(uProjectionMatrix, false, ChangedprojectionMatrix);
+	gl.uniformMatrix4fv(uProjectionMatrix, false, newProjection);
 
 	const uModelViewMatrix = gl.getUniformLocation(program, "uModelViewMatrix");
 	gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
@@ -230,7 +242,7 @@ function drawObject(gl, program, jsonObj, projectionMatrix, allObjs) {
 	}
 	
 	jsonObj.children.forEach(element => {
-		drawObject(gl, program, allObjs[element], projectionMatrix, allObjs)
+		drawObject(gl, program, allObjs[element], allObjs, pass_rotation, allObjNames)
 	});
 }
 
@@ -354,3 +366,13 @@ function saveObjectfunction (jsonObj, modelViewMatrix) {
   	URL.revokeObjectURL(url);
 }
 
+function selectPart(e) {
+	selectedPart = e.target.name
+	// slider_part_tx.value = allObjs[selectedPart].rotation;
+	// slider_part_ty.value = allObjs[selectedPart].rotation;
+	// slider_part_tz.value = allObjs[selectedPart].rotation;
+	
+	slider_part_rx.value = allObjs[selectedPart].rotation[0];
+	slider_part_ry.value = allObjs[selectedPart].rotation[1];
+	slider_part_rz.value = allObjs[selectedPart].rotation[2];
+}

@@ -15,6 +15,7 @@ const slider_sy = document.getElementById("syField");
 const slider_yc = document.getElementById("yCamera");
 const slider_sz = document.getElementById("szField");
 const slider_zc = document.getElementById("zoomCamera");
+let tree_controller = document.getElementById("tree-controller");
 
 const loader = document.getElementById("load");
 const resetCamera = document.getElementById("resetbutton");
@@ -41,40 +42,6 @@ var sy = 1;
 var sz = 1;
 var yc = 0;
 var zc = 1;
-
-slider_tx.oninput = function () {tx = this.value};
-slider_ty.oninput = function () {ty = this.value};
-slider_tz.oninput = function () {tz = this.value};
-slider_rx.oninput = function () {rx = this.value};
-slider_ry.oninput = function () {ry = this.value};
-slider_rz.oninput = function () {rz = this.value};
-
-slider_part_tx.oninput = function () {part_tx = this.value};
-slider_part_ty.oninput = function () {part_ty = this.value};
-slider_part_tz.oninput = function () {part_tz = this.value};
-slider_part_rx.oninput = function () {part_rx = this.value};
-slider_part_ry.oninput = function () {part_ry = this.value};
-slider_part_rz.oninput = function () {part_rz = this.value};
-
-slider_sx.oninput = function () {
-	sx = this.value;
-};
-
-slider_sy.oninput = function () {
-	sy = this.value;
-};
-
-slider_sz.oninput = function () {
-	sz = this.value;
-};
-
-slider_yc.oninput = function () {
-	yc = (this.value / 180) * Math.PI;
-};
-
-slider_zc.oninput = function () {
-	zc = this.value;
-};
 
 loader.onchange = function (e) {
 	resetValue();
