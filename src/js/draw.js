@@ -1,9 +1,7 @@
-
-const sliders= document.getElementsByClassName("slider");
-
 let selectedPart = ""
 var allObjs = {};
 var allObjNames = [];
+
 jsonObjTes.parts.forEach(part => {
 	if (part.name == jsonObjTes.root_name) {
 		// add root obj to the first index
@@ -15,8 +13,9 @@ jsonObjTes.parts.forEach(part => {
 		allObjs[part.name] = part;
 		}
 });
-console.log(allObjs)
 main(jsonObjTes)
+
+
 
 function main(jsonObj) {
 	
@@ -123,7 +122,7 @@ function main(jsonObj) {
 		gl.depthFunc(gl.LEQUAL);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
-		drawObject(gl, program, allObjs[allObjNames[0]], allObjs, [rx, ry, rz], allObjNames);
+		drawObject(gl, program, allObjs[allObjNames[0]], allObjs, [0,0,0], allObjNames);
 		
 		requestAnimationFrame(render);
 	}
@@ -166,7 +165,7 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames)
 	];
 	projectionMatrix = multiply(translateMatrix, projectionMatrix)
 
-	var pass_rotation = parent_rotation
+	// var pass_rotation = parent_rotation
 	
 	var modelViewMatrix = jsonObj.modelViewMatrix? jsonObj.modelViewMatrix : m4();
 	// CAMERA ANGLE
@@ -177,25 +176,29 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames)
 
 	// ROTASI
 	var cameraMatrix = m4();
-	cameraMatrix = xRotate(cameraMatrix, pass_rotation[0] /180 * Math.PI);
-	cameraMatrix = yRotate(cameraMatrix, pass_rotation[1] /180 * Math.PI);
-	cameraMatrix = zRotate(cameraMatrix, pass_rotation[2] /180 * Math.PI);
+	// GENERAL ROTATION
+	cameraMatrix = xRotate(cameraMatrix, rx /180 * Math.PI);
+	cameraMatrix = yRotate(cameraMatrix, ry /180 * Math.PI);
+	cameraMatrix = zRotate(cameraMatrix, rz /180 * Math.PI);
+
+	// INHERIT DARI PARENT
+	cameraMatrix = xRotate(cameraMatrix, parent_rotation[0] /180 * Math.PI);
+	cameraMatrix = yRotate(cameraMatrix, parent_rotation[1] /180 * Math.PI);
+	cameraMatrix = zRotate(cameraMatrix, parent_rotation[2] /180 * Math.PI);
 
 	if (jsonObj.name == selectedPart){
 		jsonObj["rotation"] = [part_rx, part_ry, part_rz]
-		// if (jsonObj.children.length > 0)
-		if (jsonObj.name != allObjNames[0])
-		pass_rotation = jsonObj["rotation"]
 	}
-	var rotX = jsonObj["rotation"][0]
-	var rotY = jsonObj["rotation"][1]
-	var rotZ = jsonObj["rotation"][2]
-
-	cameraMatrix = xRotate(cameraMatrix, rotX/180 * Math.PI);
-    cameraMatrix = yRotate(cameraMatrix, rotY/180 * Math.PI);
-    cameraMatrix = zRotate(cameraMatrix, rotZ/180 * Math.PI);
 	
+	var rot = [(parseInt(jsonObj["rotation"][0]) + parent_rotation[0]) % 360,
+				(parseInt(jsonObj["rotation"][1]) + parent_rotation[1]) % 360,
+				 (parseInt(jsonObj["rotation"][2]) + parent_rotation[2])% 360]
+		
 
+	cameraMatrix = xRotate(cameraMatrix, jsonObj["rotation"][0]/180 * Math.PI);
+    cameraMatrix = yRotate(cameraMatrix, jsonObj["rotation"][1]/180 * Math.PI);
+    cameraMatrix = zRotate(cameraMatrix, jsonObj["rotation"][2]/180 * Math.PI);
+	
 	var viewMatrix = inverse(cameraMatrix);
 	
 	// ANIMASI
@@ -242,7 +245,7 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames)
 	}
 	
 	jsonObj.children.forEach(element => {
-		drawObject(gl, program, allObjs[element], allObjs, pass_rotation, allObjNames)
+		drawObject(gl, program, allObjs[element], allObjs, rot, allObjNames)
 	});
 }
 
@@ -368,11 +371,11 @@ function saveObjectfunction (jsonObj, modelViewMatrix) {
 
 function selectPart(e) {
 	selectedPart = e.target.name
-	// slider_part_tx.value = allObjs[selectedPart].rotation;
-	// slider_part_ty.value = allObjs[selectedPart].rotation;
-	// slider_part_tz.value = allObjs[selectedPart].rotation;
-	
+	// slider_part_tx.value = allObjs[selectedPart].rotation[0];
+	// slider_part_ty.value = allObjs[selectedPart].rotation[1];
+	// slider_part_tz.value = allObjs[selectedPart].rotation[2];
 	slider_part_rx.value = allObjs[selectedPart].rotation[0];
 	slider_part_ry.value = allObjs[selectedPart].rotation[1];
 	slider_part_rz.value = allObjs[selectedPart].rotation[2];
+
 }
