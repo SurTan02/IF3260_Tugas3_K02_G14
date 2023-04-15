@@ -122,13 +122,13 @@ function main(jsonObj) {
 		gl.depthFunc(gl.LEQUAL);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
-		drawObject(gl, program, allObjs[allObjNames[0]], allObjs, [0,0,0], allObjNames);
+		drawObject(gl, program, allObjs[allObjNames[0]], allObjs, [0,0,0], allObjNames, [0,0,0]);
 		
 		requestAnimationFrame(render);
 	}
 }
 
-function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames) {	
+function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames, parent_translation) {	
 	tx = slider_tx.value;
 	ty = slider_ty.value;
 	ty = slider_ty.value;
@@ -211,10 +211,22 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames)
 	modelViewMatrix = scale(modelViewMatrix, sx, sy, sz);
 	modelViewMatrix = multiply(modelViewMatrix, viewMatrix);
 
-	// TRANSLASI
+	// TRANSLASI GENERAL - INHERIT - SELF
 	modelViewMatrix = translate(modelViewMatrix, tx, ty, tz);
+	modelViewMatrix = translate(modelViewMatrix, parent_translation[0], parent_translation[1], parent_translation[2]);
+
 	
 	
+	
+	if (jsonObj.name == selectedPart){
+		jsonObj["translation"] = [part_tx, part_ty, part_tz]
+	}
+	
+	// var trans = [(parseInt(jsonObj["translation"][0]) + parent_translation[0]) % 6,
+	// (parseInt(jsonObj["translation"][1]) + parent_translation[1]) % 6,
+	// (parseInt(jsonObj["translation"][2]) + parent_translation[2])% 6]
+	// console.log(trans)
+	modelViewMatrix = translate(modelViewMatrix, jsonObj["translation"][0], jsonObj["translation"][1], jsonObj["translation"][2]);
 	// // SAVE BUTTON
 	// save_btn.onclick = () => saveObjectfunction(jsonObj, modelViewMatrix)
 	
@@ -245,7 +257,7 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames)
 	}
 	
 	jsonObj.children.forEach(element => {
-		drawObject(gl, program, allObjs[element], allObjs, rot, allObjNames)
+		drawObject(gl, program, allObjs[element], allObjs, rot, allObjNames, jsonObj.translation)
 	});
 }
 
@@ -371,9 +383,10 @@ function saveObjectfunction (jsonObj, modelViewMatrix) {
 
 function selectPart(e) {
 	selectedPart = e.target.name
-	// slider_part_tx.value = allObjs[selectedPart].rotation[0];
-	// slider_part_ty.value = allObjs[selectedPart].rotation[1];
-	// slider_part_tz.value = allObjs[selectedPart].rotation[2];
+	slider_part_tx.value = allObjs[selectedPart].translation[0];
+	slider_part_ty.value = allObjs[selectedPart].translation[1];
+	slider_part_tz.value = allObjs[selectedPart].translation[2];
+
 	slider_part_rx.value = allObjs[selectedPart].rotation[0];
 	slider_part_ry.value = allObjs[selectedPart].rotation[1];
 	slider_part_rz.value = allObjs[selectedPart].rotation[2];
