@@ -1,6 +1,7 @@
 let selectedPart = ""
 var allObjs = {};
 var allObjNames = [];
+var i = 0;
 
 jsonObjTes.parts.forEach(part => {
 	if (part.name == jsonObjTes.root_name) {
@@ -14,7 +15,6 @@ jsonObjTes.parts.forEach(part => {
 		}
 });
 main(jsonObjTes)
-
 
 
 function main(jsonObj) {
@@ -204,8 +204,14 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames,
 	
 	// ANIMASI
 	if(animation_check.checked){
-		rx >= 360 ? rx = 0 : rx = parseFloat(rx) + 0.5
-		slider_rx.value = rx;
+		allObjNames.forEach((element) => {
+			allObjs[element]["rotation"] = allObjs[element]["animation"][i];
+			// console.log(allObjs[element]["rotation"]);
+			slider_part_rx.value = allObjs[element]["animation"][i][0];
+			slider_part_ry.value = allObjs[element]["animation"][i][1];
+			slider_part_rz.value = allObjs[element]["animation"][i][2];
+		}
+		)
 	}
 
 	// SCALING
@@ -393,3 +399,17 @@ function selectPart(e) {
 	slider_part_rz.value = allObjs[selectedPart].rotation[2];
 
 }
+
+
+function animationFrame(){
+	// i >= 8 ? i = 0 : i = i + 1;
+	if(animation_check.checked){
+		if(i >= allObjs[allObjNames[0]]["animation"].length -1){
+			i = 0;
+			animation_check.checked = false;
+		}else{
+			i = i + 1;
+		}
+	}
+}
+setInterval(animationFrame, 600);
