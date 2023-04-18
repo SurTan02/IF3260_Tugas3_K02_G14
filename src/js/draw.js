@@ -131,7 +131,7 @@ function main(jsonObj) {
 function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames, parent_translation) {	
 	tx = slider_tx.value;
 	ty = slider_ty.value;
-	ty = slider_ty.value;
+	tz = slider_tz.value;
 	sx = slider_sx.value;
 	sy = slider_sy.value;
 	sz = slider_sz.value;
