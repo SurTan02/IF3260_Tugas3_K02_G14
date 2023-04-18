@@ -67,6 +67,16 @@ loader.onchange = function (e) {
 	reader.readAsText(file);
 };
 
+animation_reverse.onchange = function () {
+	if(!play_animation && (frame_counter == 0 || frame_counter == 9)){
+		if(animation_reverse.checked){
+			frame_counter = allObjs[allObjNames[0]]["animation"].length -1;
+		}else{
+			frame_counter = 0
+		}
+	}
+}
+
 animation_play.onclick = function () {
 	play_animation = true;
 }
