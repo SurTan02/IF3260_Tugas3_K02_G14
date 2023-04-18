@@ -22,7 +22,9 @@ const resetCamera = document.getElementById("resetbutton");
 const save_btn = document.getElementById("savebutton");
 const projection_opt = document.getElementById("projection-option");
 const texture_opt = document.getElementById("texture-option");
-const animation_check = document.getElementById("animation-state");
+const animation_play = document.getElementById("animation-state-play");
+const animation_pause = document.getElementById("animation-state-pause");
+const animation_replay = document.getElementById("animation-state-replay");
 const shading_check = document.getElementById("shader-state");
 
 var tx = 0;
@@ -42,6 +44,8 @@ var sy = 1;
 var sz = 1;
 var yc = 0;
 var zc = 1;
+var frame_counter = 0;
+var play_animation = false;
 
 loader.onchange = function (e) {
 	resetValue();
@@ -59,9 +63,24 @@ loader.onchange = function (e) {
 	reader.readAsText(file);
 };
 
+animation_play.onclick = function () {
+	play_animation = true;
+}
+
+animation_pause.onclick = function () {
+	play_animation = false;
+}
+
+animation_replay.onclick = function () {
+	play_animation = false;
+	frame_counter = 0;
+	play_animation = true;
+}
+
 resetCamera.onclick = function (e) {
 	resetValue();
 };
+
 
 function resetValue() {
 	tx = 0;
@@ -93,7 +112,7 @@ function resetValue() {
 	const selectedTexture = document.getElementById("custom");
 	selectedTexture.checked = true;
 	shading_check.checked = false;
-	animation_check.checked = false;
+	animation_play.checked = false;
 }
 
 projection_opt.onchange = function () {

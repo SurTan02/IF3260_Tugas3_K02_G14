@@ -1,7 +1,6 @@
 let selectedPart = ""
 var allObjs = {};
 var allObjNames = [];
-var i = 0;
 
 jsonObjTes.parts.forEach(part => {
 	if (part.name == jsonObjTes.root_name) {
@@ -203,15 +202,23 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames,
 	var viewMatrix = inverse(cameraMatrix);
 	
 	// ANIMASI
-	if(animation_check.checked){
+	if(play_animation){
 		allObjNames.forEach((element) => {
-			allObjs[element]["rotation"] = allObjs[element]["animation"][i];
+			allObjs[element]["rotation"] = allObjs[element]["animation"][frame_counter];
 			// console.log(allObjs[element]["rotation"]);
-			slider_part_rx.value = allObjs[element]["animation"][i][0];
-			slider_part_ry.value = allObjs[element]["animation"][i][1];
-			slider_part_rz.value = allObjs[element]["animation"][i][2];
+			slider_part_rx.value = allObjs[element]["animation"][frame_counter][0];
+			slider_part_ry.value = allObjs[element]["animation"][frame_counter][1];
+			slider_part_rz.value = allObjs[element]["animation"][frame_counter][2];
 		}
 		)
+	}
+
+	if(play_animation){
+		animation_play.disabled = true;
+		animation_pause.disabled = false;
+	}else{
+		animation_play.disabled = false;
+		animation_pause.disabled = true;
 	}
 
 	// SCALING
@@ -403,13 +410,16 @@ function selectPart(e) {
 
 function animationFrame(){
 	// i >= 8 ? i = 0 : i = i + 1;
-	if(animation_check.checked){
-		if(i >= allObjs[allObjNames[0]]["animation"].length -1){
-			i = 0;
-			animation_check.checked = false;
+	if(play_animation){
+		if(frame_counter >= allObjs[allObjNames[0]]["animation"].length -1){
+			frame_counter = 0;
+			play_animation = false;
 		}else{
-			i = i + 1;
+			frame_counter = frame_counter + 1;
 		}
 	}
 }
+
+
+
 setInterval(animationFrame, 600);
