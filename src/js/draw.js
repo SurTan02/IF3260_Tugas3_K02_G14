@@ -230,9 +230,21 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 	modelViewMatrix = translate(modelViewMatrix, tx, ty, tz);
 	modelViewMatrix = translate(modelViewMatrix, parent_translation[0], parent_translation[1], parent_translation[2]);
 
+	
+
 	// SELF TRANSLATION
 	if (currentObject.name == selectedPart){
 		currentObject["translation"] = [part_tx, part_ty, part_tz]
+	}
+
+	var pass_translation = [
+		(parseFloat(currentObject["translation"][0]) + parent_translation[0]),
+		(parseFloat(currentObject["translation"][1]) + parent_translation[1]),
+		(parseFloat(currentObject["translation"][2]) + parent_translation[2]) 
+	]
+	
+	if (currentObject.name == selectedPart){
+		console.log(currentObject.translation, pass_translation, parent_translation)
 	}
 	
 	modelViewMatrix = translate(modelViewMatrix, currentObject["translation"][0], currentObject["translation"][1], currentObject["translation"][2]);
@@ -267,7 +279,7 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 	}
 
 	currentObject.children.forEach(part => {
-		drawObject(gl, program, allObjs[part], allObjs, pass_rotation, currentObject.translation)
+		drawObject(gl, program, allObjs[part], allObjs, pass_rotation, pass_translation)
 	});
 }
 
