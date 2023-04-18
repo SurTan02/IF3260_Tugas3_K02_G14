@@ -25,6 +25,7 @@ const texture_opt = document.getElementById("texture-option");
 const animation_play = document.getElementById("animation-state-play");
 const animation_pause = document.getElementById("animation-state-pause");
 const animation_replay = document.getElementById("animation-state-replay");
+const animation_speed = document.getElementById("animation-speed");
 const shading_check = document.getElementById("shader-state");
 
 var tx = 0;
@@ -46,6 +47,7 @@ var yc = 0;
 var zc = 1;
 var frame_counter = 0;
 var play_animation = false;
+var animation_speed_interval = 10;
 
 loader.onchange = function (e) {
 	resetValue();

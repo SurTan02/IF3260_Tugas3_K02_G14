@@ -1,6 +1,7 @@
 let selectedPart = ""
 var allObjs = {};
 var allObjNames = [];
+var timer = 0;
 
 jsonObjTes.parts.forEach(part => {
 	if (part.name == jsonObjTes.root_name) {
@@ -145,6 +146,9 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames,
 	part_rx = slider_part_rx.value;
 	part_ry = slider_part_ry.value;
 	part_rz = slider_part_rz.value;
+	animation_speed_interval = animation_speed.value;
+
+
 	gl.useProgram(program);
 
 	// LOAD OBJECT
@@ -409,17 +413,19 @@ function selectPart(e) {
 
 
 function animationFrame(){
-	// i >= 8 ? i = 0 : i = i + 1;
-	if(play_animation){
-		if(frame_counter >= allObjs[allObjNames[0]]["animation"].length -1){
-			frame_counter = 0;
-			play_animation = false;
-		}else{
-			frame_counter = frame_counter + 1;
+	timer++;
+	if(timer >= (20 - animation_speed_interval)){
+		timer = 0;
+		if(play_animation){
+			if(frame_counter >= allObjs[allObjNames[0]]["animation"].length -1){
+				frame_counter = 0;
+				play_animation = false;
+			}else{
+				frame_counter = frame_counter + 1;
+			}
 		}
 	}
 }
 
+setInterval(animationFrame, 50);
 
-
-setInterval(animationFrame, 600);
