@@ -6,12 +6,12 @@ var timer = 0;
 jsonObjTes.parts.forEach(part => {
 	if (part.name == jsonObjTes.root_name) {
 		// add root obj to the first index
-		allObjNames.unshift(part.name);
-		allObjs[part.name] = part;
+			allObjNames.unshift(part.name);
+			allObjs[part.name] = part;
 		}
 		else {
-		allObjNames.push(part.name);
-		allObjs[part.name] = part;
+			allObjNames.push(part.name);
+			allObjs[part.name] = part;
 		}
 });
 main(jsonObjTes)
@@ -122,13 +122,13 @@ function main(jsonObj) {
 		gl.depthFunc(gl.LEQUAL);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	
-		drawObject(gl, program, allObjs[allObjNames[0]], allObjs, [0,0,0], allObjNames, [0,0,0]);
+		drawObject(gl, program, allObjs[allObjNames[0]], allObjs, [0,0,0, [0,0,0]], allObjNames, [0,0,0]);
 		
 		requestAnimationFrame(render);
 	}
 }
 
-function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames, parent_translation) {	
+function drawObject(gl, program, currentObject, allObjs, parent_rotation, allObjNames, parent_translation) {	
 	tx = slider_tx.value;
 	ty = slider_ty.value;
 	tz = slider_tz.value;
@@ -154,10 +154,11 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames,
 	// LOAD OBJECT
 	const model = loadObject(
 		gl,
-		jsonObj.vertices,
-		jsonObj.indices,
-		jsonObj.color
+		currentObject.vertices,
+		currentObject.indices,
+		currentObject.color
 	);
+
 	// PROJECTION
 	var projectionMatrix = getProjection(projection_opt.value)
 	const translateMatrix = [
@@ -167,86 +168,83 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames,
 		0, 0, -10, 1
 	];
 	projectionMatrix = multiply(translateMatrix, projectionMatrix)
-
-	// var pass_rotation = parent_rotation
+	var modelViewMatrix = currentObject.modelViewMatrix? currentObject.modelViewMatrix : m4();
 	
-	var modelViewMatrix = jsonObj.modelViewMatrix? jsonObj.modelViewMatrix : m4();
+	var cameraMatrix = m4();
 	// CAMERA ANGLE
 	var newProjection = rotationY(projectionMatrix, yc/180 * Math.PI);
-
 	// CAMERA ZOOM
-	modelViewMatrix = scale(modelViewMatrix, zc, zc, zc);
-
+	cameraMatrix = scale(modelViewMatrix, zc, zc, zc);
+	
 	// ROTASI
-	var cameraMatrix = m4();
 	// GENERAL ROTATION
 	cameraMatrix = xRotate(cameraMatrix, rx /180 * Math.PI);
 	cameraMatrix = yRotate(cameraMatrix, ry /180 * Math.PI);
 	cameraMatrix = zRotate(cameraMatrix, rz /180 * Math.PI);
 
-	// INHERIT DARI PARENT
+	// ROTATION INHERIT FROM PARENT
+	cameraMatrix = translate(cameraMatrix, -parent_rotation[3][0], -parent_rotation[3][1], -parent_rotation[3][2]);
 	cameraMatrix = xRotate(cameraMatrix, parent_rotation[0] /180 * Math.PI);
 	cameraMatrix = yRotate(cameraMatrix, parent_rotation[1] /180 * Math.PI);
 	cameraMatrix = zRotate(cameraMatrix, parent_rotation[2] /180 * Math.PI);
+	cameraMatrix = translate(cameraMatrix, parent_rotation[3][0], parent_rotation[3][1], parent_rotation[3][2]);
 
-	if (jsonObj.name == selectedPart){
-		jsonObj["rotation"] = [part_rx, part_ry, part_rz]
+	if (currentObject.name == selectedPart && !play_animation){
+		currentObject["rotation"] = [part_rx, part_ry, part_rz]
 	}
 	
-	var rot = [(parseInt(jsonObj["rotation"][0]) + parent_rotation[0]) % 360,
-				(parseInt(jsonObj["rotation"][1]) + parent_rotation[1]) % 360,
-				 (parseInt(jsonObj["rotation"][2]) + parent_rotation[2])% 360]
+	var pass_rotation = [
+		(parseInt(currentObject["rotation"][0]) + parent_rotation[0]) % 360,
+		(parseInt(currentObject["rotation"][1]) + parent_rotation[1]) % 360,
+		(parseInt(currentObject["rotation"][2]) + parent_rotation[2]) % 360,	
+		currentObject["rotate_coord"]
+	]
 	
-	cameraMatrix = translate(cameraMatrix, -jsonObj.rotate_coord[0], -jsonObj.rotate_coord[1], -jsonObj.rotate_coord[2]);
-	cameraMatrix = xRotate(cameraMatrix, jsonObj["rotation"][0]/180 * Math.PI);
-    cameraMatrix = yRotate(cameraMatrix, jsonObj["rotation"][1]/180 * Math.PI);
-    cameraMatrix = zRotate(cameraMatrix, jsonObj["rotation"][2]/180 * Math.PI);
-	cameraMatrix = translate(cameraMatrix, jsonObj.rotate_coord[0], jsonObj.rotate_coord[1], jsonObj.rotate_coord[2]);
+	// SELF ROTATION
+	cameraMatrix = translate(cameraMatrix, -currentObject["rotate_coord"][0], -currentObject["rotate_coord"][1], -currentObject["rotate_coord"][2]);
+	cameraMatrix = xRotate(cameraMatrix, currentObject["rotation"][0]/180 * Math.PI);
+    cameraMatrix = yRotate(cameraMatrix, currentObject["rotation"][1]/180 * Math.PI);
+    cameraMatrix = zRotate(cameraMatrix, currentObject["rotation"][2]/180 * Math.PI);
+	cameraMatrix = translate(cameraMatrix, currentObject["rotate_coord"][0], currentObject["rotate_coord"][1], currentObject["rotate_coord"][2]);
 
 	var viewMatrix = inverse(cameraMatrix);
 	
 	// ANIMASI
 	if(play_animation){
 		allObjNames.forEach((element) => {
+			if (allObjs[element]["animation"][frame_counter] == null){
+				allObjs[element]["animation"][frame_counter] = [0,0,0]
+			}
+			
 			allObjs[element]["rotation"] = allObjs[element]["animation"][frame_counter];
-			// console.log(allObjs[element]["rotation"]);
 			slider_part_rx.value = allObjs[element]["animation"][frame_counter][0];
 			slider_part_ry.value = allObjs[element]["animation"][frame_counter][1];
 			slider_part_rz.value = allObjs[element]["animation"][frame_counter][2];
-		}
-		)
-	}
-
-	if(play_animation){
+		})
 		animation_play.disabled = true;
 		animation_pause.disabled = false;
-	}else{
+	} else{
 		animation_play.disabled = false;
 		animation_pause.disabled = true;
 	}
 
-	// SCALING
+	// GENERAL SCALING
 	modelViewMatrix = scale(modelViewMatrix, sx, sy, sz);
 	modelViewMatrix = multiply(modelViewMatrix, viewMatrix);
 
-	// TRANSLASI GENERAL - INHERIT - SELF
+	// GENERAL TRANSLATION - INHERIT FROM PARENT
 	modelViewMatrix = translate(modelViewMatrix, tx, ty, tz);
 	modelViewMatrix = translate(modelViewMatrix, parent_translation[0], parent_translation[1], parent_translation[2]);
 
-	
-	
-	
-	if (jsonObj.name == selectedPart){
-		jsonObj["translation"] = [part_tx, part_ty, part_tz]
+	// SELF TRANSLATION
+	if (currentObject.name == selectedPart){
+		currentObject["translation"] = [part_tx, part_ty, part_tz]
 	}
 	
-	// var trans = [(parseInt(jsonObj["translation"][0]) + parent_translation[0]) % 6,
-	// (parseInt(jsonObj["translation"][1]) + parent_translation[1]) % 6,
-	// (parseInt(jsonObj["translation"][2]) + parent_translation[2])% 6]
-	// console.log(trans)
-	modelViewMatrix = translate(modelViewMatrix, jsonObj["translation"][0], jsonObj["translation"][1], jsonObj["translation"][2]);
+	modelViewMatrix = translate(modelViewMatrix, currentObject["translation"][0], currentObject["translation"][1], currentObject["translation"][2]);
+	
 	// // SAVE BUTTON
-	// save_btn.onclick = () => saveObjectfunction(jsonObj, modelViewMatrix)
+	// save_btn.onclick = () => saveObjectfunction(currentObject, modelViewMatrix)
 	
   	{
 		const vertexPosition = gl.getAttribLocation(program, "aVertexPosition");
@@ -274,8 +272,8 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames,
 		gl.drawElements(gl.TRIANGLES, model.ilength, gl.UNSIGNED_SHORT, 0);
 	}
 	
-	jsonObj.children.forEach(element => {
-		drawObject(gl, program, allObjs[element], allObjs, rot, allObjNames, jsonObj.translation)
+	currentObject.children.forEach(element => {
+		drawObject(gl, program, allObjs[element], allObjs, pass_rotation, allObjNames, currentObject.translation)
 	});
 }
 
