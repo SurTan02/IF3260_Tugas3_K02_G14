@@ -53,7 +53,7 @@ var animation_speed_interval = 10;
 
 loader.onchange = function (e) {
 	resetValue();
-
+	
 	var file = e.target.files[0];
 	if (!file) {
 		console.log("FILE NOT FOUND");
@@ -61,10 +61,10 @@ loader.onchange = function (e) {
 
 	var reader = new FileReader();
 	reader.onload = function (event) {
-		var jsonObj = JSON.parse(event.target.result);
-		main(jsonObj);
+		var selectedObj = JSON.parse(event.target.result)
+		main(selectedObj)
 	};
-	reader.readAsText(file);
+	reader.readAsText(file)
 };
 
 animation_reverse.onchange = function () {
