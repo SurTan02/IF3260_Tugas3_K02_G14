@@ -193,12 +193,13 @@ function drawObject(gl, program, jsonObj, allObjs, parent_rotation, allObjNames,
 	var rot = [(parseInt(jsonObj["rotation"][0]) + parent_rotation[0]) % 360,
 				(parseInt(jsonObj["rotation"][1]) + parent_rotation[1]) % 360,
 				 (parseInt(jsonObj["rotation"][2]) + parent_rotation[2])% 360]
-		
-
+	
+	cameraMatrix = translate(cameraMatrix, -jsonObj.rotate_coord[0], -jsonObj.rotate_coord[1], -jsonObj.rotate_coord[2]);
 	cameraMatrix = xRotate(cameraMatrix, jsonObj["rotation"][0]/180 * Math.PI);
     cameraMatrix = yRotate(cameraMatrix, jsonObj["rotation"][1]/180 * Math.PI);
     cameraMatrix = zRotate(cameraMatrix, jsonObj["rotation"][2]/180 * Math.PI);
-	
+	cameraMatrix = translate(cameraMatrix, jsonObj.rotate_coord[0], jsonObj.rotate_coord[1], jsonObj.rotate_coord[2]);
+
 	var viewMatrix = inverse(cameraMatrix);
 	
 	// ANIMASI
