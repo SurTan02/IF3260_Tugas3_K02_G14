@@ -9,12 +9,13 @@ html {
 }
 
 body {
-	background-color: #fff;
+	background-color: #1d1f3d;
 	font-family: "SF Compact", sans-serif;
 	color: #fff;
 	margin: 0;
 	padding: 0;
 	min-height: 100vh;
+	/* height: 100%; */
 }
 
 main {

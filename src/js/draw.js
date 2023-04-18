@@ -413,19 +413,44 @@ function selectPart(e) {
 
 
 function animationFrame(){
+	
 	timer++;
 	if(timer >= (20 - animation_speed_interval)){
 		timer = 0;
-		if(play_animation){
+		if(play_animation && animation_loop.checked){
 			if(frame_counter >= allObjs[allObjNames[0]]["animation"].length -1){
-				frame_counter = 0;
-				play_animation = false;
-			}else{
+				animation_loop_dir = false;
+			}else if(frame_counter <= 0){
+				animation_loop_dir = true;
+			}
+		
+			if(animation_loop_dir){
 				frame_counter = frame_counter + 1;
+			}else{
+				frame_counter = frame_counter - 1;
+			}
+		}
+
+		if(play_animation && !animation_loop.checked){
+			if(animation_reverse.checked){
+				if(frame_counter <= 0){
+					frame_counter = allObjs[allObjNames[0]]["animation"].length -1;
+					play_animation = false;
+				}else{
+					frame_counter = frame_counter - 1;
+				}
+			}else{
+				if(frame_counter >= allObjs[allObjNames[0]]["animation"].length -1){
+					frame_counter = 0;
+					play_animation = false;
+				}else{
+					frame_counter = frame_counter + 1;
+				}
 			}
 		}
 	}
 }
 
+var animation_loop_dir = true;
 setInterval(animationFrame, 50);
 

@@ -26,6 +26,8 @@ const animation_play = document.getElementById("animation-state-play");
 const animation_pause = document.getElementById("animation-state-pause");
 const animation_replay = document.getElementById("animation-state-replay");
 const animation_speed = document.getElementById("animation-speed");
+const animation_reverse = document.getElementById("animation-reverse");
+const animation_loop = document.getElementById("animation-loop");
 const shading_check = document.getElementById("shader-state");
 
 var tx = 0;
@@ -75,7 +77,11 @@ animation_pause.onclick = function () {
 
 animation_replay.onclick = function () {
 	play_animation = false;
-	frame_counter = 0;
+	if(animation_reverse.checked){
+		frame_counter = allObjs[allObjNames[0]]["animation"].length -1;
+	}else{
+		frame_counter = 0
+	}
 	play_animation = true;
 }
 
