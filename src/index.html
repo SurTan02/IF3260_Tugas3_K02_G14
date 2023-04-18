@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>3D Web GL Hollow Object</title>
+		<title>3D Web GL Articulated Model</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link rel="stylesheet" type="text/css" href="style.css" />
@@ -18,17 +18,15 @@
 		<main id="app">
             <div id="left-pane" class="pane">
 				<h1 style="text-align: center;">3D WebGL</br>
-                    <i class="fa fa-snapchat-ghost" aria-hidden="true"></i>Hollow Object
+                    <i class="fa fa-snapchat-ghost" aria-hidden="true"></i>Articulated Model
                 </h1>
                 <h2>Load Object</h2>
                 <input id="load" type="file" accept=".json"><br>
                 
-                <h2>Description</h2>
-                <p style="font-size: 14px;">Deskripsi</p>
-                <div id="tree-controller">
-                    <h2>Help</h2>
-                </div>
                 <div>
+                    <h2>Component Controller</h2>
+                    <div id="tree-controller"></div>
+                    <br>
 					<span class="control-label">Part Translation</span>
 					<div class="input-container">
                         <label for="part-tx">tx: </label>
@@ -51,14 +49,22 @@
                         <input type="range" min="-180" max="180" value="0" class="slider" id="part-rz" name="part-rz"><br>
                     </div>
 				</div>
+                <h2>Description</h2>
+                <p style="font-size: 15px;">Website yang dapat menampilkan 3D object dan melakukan modifikasi objek maupun view.</p>
+                <h2>Help</h2>
+                <div style="font-size: 12px;">
+                    <p>1. <strong>Component Controller.</strong> Bagian ini digunakan untuk mengatur atau memodifikasi tiap objek. Sebelum menggunakan controller, pilih bagian dari articulated model terlebih dahulu.</p>                    
+                    <p>1. <strong>General View Controls.</strong> Bagian ini digunakan untuk mengatur atau memodifikasi view model secara keseluruhan.</p>                    
+                </div>
 
 			</div>
             <canvas id="canvas" width="1280px" height="720px"></canvas>
 			<!-- <canvas id="canvas"></canvas> -->
+            
 			<div class="pane">
                 <h2 style="text-align: center; border-bottom: 1px solid #7e78be;">
                     <i class="fa fa-gear fa-spin" style="font-size:25px"></i>
-                    Controls
+                    General View Controls
                 </h2>
                 <div>
                     <div style="display: flex; vertical-align: middle; padding-bottom: 5px;">
