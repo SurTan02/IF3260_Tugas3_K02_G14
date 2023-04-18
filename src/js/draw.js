@@ -1,33 +1,28 @@
 let selectedPart = ""
-var allObjs = {};
-var allObjNames = [];
 var timer = 0;
 
-jsonObjTes.parts.forEach(part => {
-	if (part.name == jsonObjTes.root_name) {
-		// add root obj to the first index
-			allObjNames.unshift(part.name);
-			allObjs[part.name] = part;
-		}
-		else {
-			allObjNames.push(part.name);
-			allObjs[part.name] = part;
-		}
-});
+var allObjs;
+let baseObject 
+
 main(jsonObjTes)
 
+function main(loadedJson) {
+	allObjs = {}
+	loadedJson.parts.forEach(part => {
+		if (part.name == loadedJson.root_name) {
+			baseObject = part.name
+		}
+		allObjs[part.name] = part
+	});
 
-function main(jsonObj) {
-	
-	
-	
-
-	allObjNames.forEach(part => {
-		tree_controller.innerHTML += `<button onclick="selectPart(event)" name=${part}> ${part}</button>`
+	tree_controller.innerHTML = ''
+	Object.keys(allObjs).forEach(part => {
+		tree_controller.innerHTML += `<button onclick="selectPart(event)" name=${allObjs[part].name}> ${allObjs[part].name}</button>`
 	});
 
 	const canvas = document.getElementById("canvas");
 	const gl = canvas.getContext("webgl");
+
 	// Define the vertex and fragment shaders
 	// SHADER -> TAR GANTI BUATAN KITA
 	const vertexShaderSource = `
@@ -113,7 +108,6 @@ function main(jsonObj) {
 	
 	// Draw the scene
 	requestAnimationFrame(render);
-
 	function render() {
 		// Clear Canvas
 		gl.clearColor(0.7, 0.7, 0.7, 1.0);
@@ -121,14 +115,14 @@ function main(jsonObj) {
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LEQUAL);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	
-		drawObject(gl, program, allObjs[allObjNames[0]], allObjs, [0,0,0, [0,0,0]], allObjNames, [0,0,0]);
+		
+		drawObject(gl, program, allObjs[baseObject], allObjs, [0,0,0, [0,0,0]], [0,0,0]);
 		
 		requestAnimationFrame(render);
 	}
 }
 
-function drawObject(gl, program, currentObject, allObjs, parent_rotation, allObjNames, parent_translation) {	
+function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent_translation) {	
 	tx = slider_tx.value;
 	ty = slider_ty.value;
 	tz = slider_tz.value;
@@ -211,7 +205,7 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, allObj
 	
 	// ANIMASI
 	if(play_animation){
-		allObjNames.forEach((element) => {
+		Object.keys(allObjs).forEach((element) => {
 			if (allObjs[element]["animation"][frame_counter] == null){
 				allObjs[element]["animation"][frame_counter] = [0,0,0]
 			}
@@ -271,9 +265,9 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, allObj
 	{
 		gl.drawElements(gl.TRIANGLES, model.ilength, gl.UNSIGNED_SHORT, 0);
 	}
-	
-	currentObject.children.forEach(element => {
-		drawObject(gl, program, allObjs[element], allObjs, pass_rotation, allObjNames, currentObject.translation)
+
+	currentObject.children.forEach(part => {
+		drawObject(gl, program, allObjs[part], allObjs, pass_rotation, currentObject.translation)
 	});
 }
 
@@ -416,7 +410,7 @@ function animationFrame(){
 	if(timer >= (20 - animation_speed_interval)){
 		timer = 0;
 		if(play_animation && animation_loop.checked){
-			if(frame_counter >= allObjs[allObjNames[0]]["animation"].length -1){
+			if(frame_counter >= allObjs[baseObject]["animation"].length -1){
 				animation_loop_dir = false;
 			}else if(frame_counter <= 0){
 				animation_loop_dir = true;
@@ -432,13 +426,13 @@ function animationFrame(){
 		if(play_animation && !animation_loop.checked){
 			if(animation_reverse.checked){
 				if(frame_counter <= 0){
-					frame_counter = allObjs[allObjNames[0]]["animation"].length -1;
+					frame_counter = allObjs[baseObject]["animation"].length -1;
 					play_animation = false;
 				}else{
 					frame_counter = frame_counter - 1;
 				}
 			}else{
-				if(frame_counter >= allObjs[allObjNames[0]]["animation"].length -1){
+				if(frame_counter >= allObjs[baseObject]["animation"].length -1){
 					frame_counter = 0;
 					play_animation = false;
 				}else{
@@ -450,5 +444,4 @@ function animationFrame(){
 }
 
 var animation_loop_dir = true;
-setInterval(animationFrame, 50);
-
+setInterval(animationFrame , 50);
