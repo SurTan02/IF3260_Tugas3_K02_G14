@@ -68,9 +68,9 @@ loader.onchange = function (e) {
 };
 
 animation_reverse.onchange = function () {
-	if(!play_animation && (frame_counter == 0 || frame_counter == 9)){
+	if(!play_animation && (frame_counter == 0 || frame_counter == allObjs[baseObject]["animation"].length -1)){
 		if(animation_reverse.checked){
-			frame_counter = allObjs[allObjNames[0]]["animation"].length -1;
+			frame_counter = allObjs[baseObject]["animation"].length -1;
 		}else{
 			frame_counter = 0
 		}
@@ -88,7 +88,7 @@ animation_pause.onclick = function () {
 animation_replay.onclick = function () {
 	play_animation = false;
 	if(animation_reverse.checked){
-		frame_counter = allObjs[allObjNames[0]]["animation"].length -1;
+		frame_counter =allObjs[baseObject]["animation"].length -1;
 	}else{
 		frame_counter = 0
 	}

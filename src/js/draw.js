@@ -286,6 +286,9 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 		gl.drawElements(gl.TRIANGLES, model.ilength, gl.UNSIGNED_SHORT, 0);
 	}
 
+	console.log(play_animation)
+	console.log(frame_counter)
+
 	currentObject.children.forEach(part => {
 		drawObject(gl, program, allObjs[part], allObjs, pass_rotation, pass_translation)
 	});
@@ -480,3 +483,4 @@ function animationFrame(){
 
 var animation_loop_dir = true;
 setInterval(animationFrame , 50);
+

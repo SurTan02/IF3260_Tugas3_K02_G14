@@ -2,6 +2,9 @@
   "model_name" : "testing_obj",
   "root_name" : "body",
   "texture_mode" : 3,
+  "rotation" : [0, 0, 0],
+  "translation" : [0, 0, 0],
+  "scaling" : [1, 1, 1],
   "parts": [
       {
           "name" : "body",
