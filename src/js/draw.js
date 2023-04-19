@@ -37,31 +37,33 @@ function main(loadedJson) {
 	// SHADER -> TAR GANTI BUATAN KITA
 	const vertexShaderSource = `
 	attribute vec3 aVertexPosition; 
-  attribute vec3 aBarycentric;
-  attribute vec3 aNormal; 
+  	attribute vec3 aBarycentric;
+  	attribute vec3 aNormal;
+
+	uniform int textureVert;
   
-  varying vec3 interpBary;
-  varying vec3 normalInterp;
-  varying vec3 vertPos;
+	varying vec3 interpBary;
+	varying vec3 normalInterp;
+	varying vec3 vertPos;
   
 	uniform mat4 uModelViewMatrix; 
 	uniform mat4 uProjectionMatrix; 
-  uniform mat4 uNormalMatrix; 
+  	uniform mat4 uNormalMatrix; 
   
 	attribute vec3 aVertexColor; 
 	uniform vec4 uVertexColor;
 
-  varying lowp vec4 vColor;
+	varying vec3 vWorldPosition;
+    varying vec3 vWorldNormal;
+
+  	varying lowp vec4 vColor;
 
 	void main(void) {
 		vec4 newModelViewMatrix = uModelViewMatrix * vec4(aVertexPosition, 1.0);
-    
-    interpBary = aBarycentric;
 		gl_Position = uProjectionMatrix * newModelViewMatrix;
-    vec3 transformedNormal = vec3(uNormalMatrix * vec4(aNormal, 0.0));
-    vec4 vertPos4 = uModelViewMatrix * vec4(aVertexPosition, 1.0);
-    vertPos = vec3(vertPos4) / vertPos4.w;
-    normalInterp = vec3(uNormalMatrix * vec4(transformedNormal, 0.0));
+
+		vWorldPosition = (newModelViewMatrix).xyz;
+		vWorldNormal = mat3(uModelViewMatrix) * aNormal;
     
 		vColor = vec4(aVertexColor, 1.0);
 
@@ -71,21 +73,26 @@ function main(loadedJson) {
 	const fragmentShaderSource = `
 
 	precision mediump float;
-  varying vec3 normalInterp;
-  varying vec3 vertPos;
-  varying lowp vec4 vColor;
-  
-  uniform vec3 uLightPos;
-  uniform vec3 uAmbientColor;
-  uniform vec3 uDiffuseColor;
-  uniform vec3 uSpecColor;
+	varying vec3 normalInterp;
+	varying vec3 vertPos;
+	varying lowp vec4 vColor;
+	
+	uniform vec3 uLightPos;
+	uniform vec3 uAmbientColor;
+	uniform vec3 uDiffuseColor;
+	uniform vec3 uSpecColor;
 
-  uniform float uAmbientCons;
-  uniform float uDiffuseCons;
-  uniform float uSpecCons;
-  uniform float uShineCons;
+	uniform float uAmbientCons;
+	uniform float uDiffuseCons;
+	uniform float uSpecCons;
+	uniform float uShineCons;
 
-  uniform bool uShading;
+  	uniform bool uShading;
+
+	varying vec3 vWorldPosition;
+	varying vec3 vWorldNormal;
+
+	uniform samplerCube uTexture;
 
 	void main(void) {
     if (uShading){
@@ -109,11 +116,16 @@ function main(loadedJson) {
       );
 
     }else{
-      gl_FragColor = vColor;
+		vec3 worldNormal = normalize(vWorldNormal);
+		vec3 eyeToSurfaceDir = normalize(vWorldPosition);
+		vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
+
+		gl_FragColor = textureCube(uTexture, direction);
     }
 	}
 	`;
 
+	loadTextureReflective(gl)
 	const program = initShaders(gl, vertexShaderSource, fragmentShaderSource);
 	
 	// Draw the scene
@@ -272,6 +284,14 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 		gl.bindBuffer(gl.ARRAY_BUFFER, model.color);
 		gl.vertexAttribPointer(aVertexColor, 3, gl.FLOAT, false, 0, 0);
 		gl.enableVertexAttribArray(aVertexColor);
+
+		const aNormal = gl.getAttribLocation(program, "aNormal");
+		gl.enableVertexAttribArray(aNormal);
+		gl.bindBuffer(gl.ARRAY_BUFFER, model.normal);
+		gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
+
+		var uTexture = gl.getUniformLocation(program, "uTexture");
+		gl.uniform1i(uTexture, 0);
 	}
 
 	const uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
@@ -285,9 +305,6 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 	{
 		gl.drawElements(gl.TRIANGLES, model.ilength, gl.UNSIGNED_SHORT, 0);
 	}
-
-	console.log(play_animation)
-	console.log(frame_counter)
 
 	currentObject.children.forEach(part => {
 		drawObject(gl, program, allObjs[part], allObjs, pass_rotation, pass_translation)
@@ -322,6 +339,73 @@ function loadShader(gl, type, source) {
 
 	return shader;
 }
+
+function loadTextureReflective(gl) {
+	var texture = gl.createTexture();
+  	gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+
+	const faceInfos = [
+	{
+		target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
+		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/pos-x.jpg',
+	},
+	{
+		target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
+		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/neg-x.jpg',
+	},
+	{
+		target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
+		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/pos-y.jpg',
+	},
+	{
+		target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/neg-y.jpg',
+	},
+	{
+		target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
+		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/pos-z.jpg',
+	},
+	{
+		target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
+		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/neg-z.jpg',
+	},
+	];
+	
+	faceInfos.forEach((face) => {
+		const {target, url} = face;
+	
+		const level = 0;
+		const internalFormat = gl.RGBA;
+		const width = 512;
+		const height = 512;
+		const border = 0;
+		const srcFormat = gl.RGBA;
+		const srcType = gl.UNSIGNED_BYTE;
+	
+		gl.texImage2D(
+			target,
+			level,
+			internalFormat,
+			width,
+			height,
+			border,
+			srcFormat,
+			srcType,
+			null
+		);
+	
+		const image = new Image();
+		image.crossOrigin = "anonymous";
+		image.onload = () => {
+			gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
+			gl.texImage2D(target, level, internalFormat, srcFormat, srcType, image);
+			gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+		};
+		image.src = url;
+	});  
+	gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+	gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+  }
 
 // Initialize object
 function loadObject(gl, vertices, indices, color) {
@@ -389,7 +473,51 @@ function loadObject(gl, vertices, indices, color) {
   
   const normalBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normal), gl.STATIC_DRAW);
+  var normals = new Float32Array(
+    [
+       0, 0, -1,
+       0, 0, -1,
+       0, 0, -1,
+       0, 0, -1,
+       0, 0, -1,
+       0, 0, -1,
+
+       0, 0, 1,
+       0, 0, 1,
+       0, 0, 1,
+       0, 0, 1,
+       0, 0, 1,
+       0, 0, 1,
+
+       0, 1, 0,
+       0, 1, 0,
+       0, 1, 0,
+       0, 1, 0,
+       0, 1, 0,
+       0, 1, 0,
+
+       0, -1, 0,
+       0, -1, 0,
+       0, -1, 0,
+       0, -1, 0,
+       0, -1, 0,
+       0, -1, 0,
+
+      -1, 0, 0,
+      -1, 0, 0,
+      -1, 0, 0,
+      -1, 0, 0,
+      -1, 0, 0,
+      -1, 0, 0,
+
+       1, 0, 0,
+       1, 0, 0,
+       1, 0, 0,
+       1, 0, 0,
+       1, 0, 0,
+       1, 0, 0,
+    ]);
+  gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
 	
   return {
 		position: vertexBuffer,
