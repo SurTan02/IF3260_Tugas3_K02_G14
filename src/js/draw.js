@@ -168,7 +168,7 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 	// CAMERA ANGLE
 	var newProjection = rotationY(projectionMatrix, yc/180 * Math.PI);
 	// CAMERA ZOOM
-	cameraMatrix = scale(modelViewMatrix, zc, zc, zc);
+	cameraMatrix = scale(modelViewMatrix, (2 - zc), (2 - zc), (2 - zc));
 	
 	// ROTASI
 	// GENERAL ROTATION
@@ -205,12 +205,17 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 	
 	// ANIMASI
 	if(play_animation){
+		selectedPart = "";
+
 		Object.keys(allObjs).forEach((element) => {
 			if (allObjs[element]["animation"][frame_counter] == null){
 				allObjs[element]["animation"][frame_counter] = [0,0,0]
 			}
-			
+			allObjs[element]["translation"] = [0,0,0];
 			allObjs[element]["rotation"] = allObjs[element]["animation"][frame_counter];
+			slider_part_tx.value = 0;
+			slider_part_ty.value = 0;
+			slider_part_tz.value = 0;
 			slider_part_rx.value = allObjs[element]["animation"][frame_counter][0];
 			slider_part_ry.value = allObjs[element]["animation"][frame_counter][1];
 			slider_part_rz.value = allObjs[element]["animation"][frame_counter][2];
