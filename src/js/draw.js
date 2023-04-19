@@ -7,6 +7,16 @@ let baseObject
 main(jsonObjTes)
 
 function main(loadedJson) {
+	slider_tx.value = loadedJson.translation[0];
+	slider_ty.value = loadedJson.translation[1];
+	slider_ty.value = loadedJson.translation[2];
+	slider_sx.value = loadedJson.scaling[0];
+	slider_sy.value = loadedJson.scaling[1];
+	slider_sz.value = loadedJson.scaling[2];
+	slider_rx.value = loadedJson.rotation[0];
+	slider_ry.value = loadedJson.rotation[1];
+	slider_rz.value = loadedJson.rotation[2];
+
 	allObjs = {}
 	loadedJson.parts.forEach(part => {
 		if (part.name == loadedJson.root_name) {
@@ -116,8 +126,8 @@ function main(loadedJson) {
 		gl.depthFunc(gl.LEQUAL);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		
-		drawObject(gl, program, allObjs[baseObject], allObjs, [0,0,0, [0,0,0]], [0,0,0]);
-		
+		drawObject(gl, program, allObjs[baseObject], allObjs, [0, 0, 0, [0,0,0]], [0,0,0]);
+		save_btn.onclick = () => saveObjectfunction(loadedJson, allObjs)
 		requestAnimationFrame(render);
 	}
 }
@@ -248,14 +258,7 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 		(parseFloat(currentObject["translation"][2]) + parent_translation[2]) 
 	]
 	
-	if (currentObject.name == selectedPart){
-		console.log(currentObject.translation, pass_translation, parent_translation)
-	}
-	
 	modelViewMatrix = translate(modelViewMatrix, currentObject["translation"][0], currentObject["translation"][1], currentObject["translation"][2]);
-	
-	// // SAVE BUTTON
-	// save_btn.onclick = () => saveObjectfunction(currentObject, modelViewMatrix)
 	
   	{
 		const vertexPosition = gl.getAttribLocation(program, "aVertexPosition");
@@ -396,9 +399,24 @@ function loadObject(gl, vertices, indices, color) {
 	};
 }
 
-function saveObjectfunction (jsonObj, modelViewMatrix) {
+function saveObjectfunction (loadedJson, allObjs) {
 
-	var newJson = JSON.stringify({...jsonObj, "modelViewMatrix": modelViewMatrix})
+	var arr = []
+	Object.keys(allObjs).forEach(part => {
+		arr.push(allObjs[part])
+	});
+
+	loadedJson.translation[0] = slider_tx.value
+	loadedJson.translation[1] = slider_ty.value
+	loadedJson.translation[2] = slider_ty.value
+	loadedJson.scaling[0] = slider_sx.value
+	loadedJson.scaling[1] = slider_sy.value
+	loadedJson.scaling[2] = slider_sz.value
+	loadedJson.rotation[0] = slider_rx.value
+	loadedJson.rotation[1] = slider_ry.value
+	loadedJson.rotation[2] = slider_rz.value
+
+	var newJson = JSON.stringify({...loadedJson, parts : arr})
 	const blob = new Blob([newJson], {type: 'application/json'});
   	const url = URL.createObjectURL(blob);
   	const link = document.createElement('a');
