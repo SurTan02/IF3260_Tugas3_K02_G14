@@ -121,7 +121,7 @@ function resetValue() {
 	sy = 1;
 	sz = 1;
 	yc = 0;
-	zc = 1;
+	zc = 0;
 	frame_counter = 0;
 	play_animation = false;
 	animation_speed_interval = 10;
@@ -147,11 +147,10 @@ function resetValue() {
 	slider_zc.value = zc;
 	animation_speed.value = animation_speed_interval;
 	projection_opt.value = "perspective";
+	texture_opt.value = 0;
 	const selectedProjection = document.getElementById("perspective");
 	selectedProjection.checked = true;
-	const selectedTexture = document.getElementById("custom");
-	selectedTexture.checked = true;
-	shading_check.checked = false;
+	shading_check.checked = true;
 	
 }
 

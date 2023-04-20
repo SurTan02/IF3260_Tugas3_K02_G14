@@ -5,10 +5,12 @@ var allObjs;
 let baseObject 
 let curtomTexture
 let reflexTexture
+let bumpTexture
 
 main(jsonObjTes)
 
 function main(loadedJson) {
+	resetValue()
 	slider_tx.value = loadedJson.translation[0];
 	slider_ty.value = loadedJson.translation[1];
 	slider_ty.value = loadedJson.translation[2];
@@ -84,14 +86,7 @@ function main(loadedJson) {
 	
 	precision mediump float;
 	
-	uniform float uAmbientCons ;
-	uniform float uDiffuseCons;
-	uniform float uSpecCons;
-	uniform float uShineCons;
 	
-	uniform vec3 uAmbientColor ;
-	uniform vec3 uDiffuseColor ;
-	uniform vec3 uSpecColor ;
 	uniform vec3 uLightPos ;
 	
 	uniform bool uShading;
@@ -100,56 +95,49 @@ function main(loadedJson) {
 	varying vec3 normalInterp;
 	varying vec3 vertPos;
 
-
 	uniform int textureVert;
 	varying vec3 vWorldPosition;
 	varying vec3 vWorldNormal;
 
     uniform sampler2D uSampler;
 	uniform samplerCube uTexture;
+	uniform sampler2D uBumpMap;
+
+	uniform vec2 uTextureSize;
 
 	varying highp vec2 vTextureCoord;
 	void main(void) {
-		
-		if(textureVert == 2){
+		if (textureVert == 0){
+			gl_FragColor = vColor;
+		} else if (textureVert == 1){
+			gl_FragColor = texture2D(uSampler, vTextureCoord);
+		} else if(textureVert == 2){
+			
 			vec3 worldNormal = normalize(vWorldNormal);
 			vec3 eyeToSurfaceDir = normalize(vWorldPosition);
 			vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
-
 			gl_FragColor = textureCube(uTexture, direction);
-		} else if (textureVert == 1){
-			gl_FragColor = texture2D(uSampler, vTextureCoord);
+			
+		} else if (textureVert == 3) {
+			vec4 baseColor = texture2D(uSampler, vTextureCoord);
+
+			gl_FragColor = baseColor;
+
 		}
 		
 
-		if (uShading){
+		if (uShading && textureVert != 2){
 			vec3 normal = normalize(normalInterp);
 			vec3 lightDir = normalize(uLightPos - vertPos);
-			vec3 reflectDir = reflect(-lightDir, normal);
-			vec3 viewDir = normalize(-vertPos);
-
 			float lambertian = max(dot(normal,lightDir), 0.0);
-			float specular = 0.0;
-
-			if(lambertian > 0.0) {
-				vec3 R = reflect(-lightDir, normal);
-				vec3 V = normalize(-vertPos);
-				float specAngle = max(dot(R, V), 0.0);
-				specular = pow(specAngle, uShineCons);
-			}
-
-			gl_FragColor = vec4(
-				uAmbientCons * uAmbientColor + 
-				uDiffuseCons * lambertian * uDiffuseColor + 
-				uSpecCons * specular * uSpecColor, 1.0
-			);
+			gl_FragColor.rgb *= vec3(lambertian);
 		}
-		
 	}
 	`;
 
-	if (!loadedJson.url) loadedJson.url = "../../assets/imageMap/iron.png"
+	if (!loadedJson.url) loadedJson.url = "../../assets/imageMap/sheep2.jpg"
 	curtomTexture = loadCustomTexture(gl, loadedJson.url)
+	bumpTexture = loadCustomTexture(gl, "../../assets/imageMap/sheep2.jpg")
 	reflexTexture = loadTextureReflective(gl)
 	const program = initShaders(gl, vertexShaderSource, fragmentShaderSource);
 	
@@ -334,9 +322,6 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, reflexTexture);
 	}
 
-	
-	// gl.uniform1i(textureVert, 1);
-
 	const uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
 	gl.uniformMatrix4fv(uProjectionMatrix, false, newProjection);
 
@@ -346,31 +331,6 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 	//Light Position
 	var uLightPos = gl.getUniformLocation(program, "uLightPos");
 	gl.uniform3fv(uLightPos, [1, 2 , 5])
-	
-	// Ambient Color
-	var uAmbientColor = gl.getUniformLocation(program, "uAmbientColor");
-	gl.uniform3fv(uAmbientColor, [0.577, 0.577, 0.577]);
-	// Diffuse Color
-	var uDiffuseColor = gl.getUniformLocation(program, "uDiffuseColor");
-	gl.uniform3fv(uDiffuseColor, [0.0, 0.635, 0.773]);
-	// Specular Color
-	var uSpecColor = gl.getUniformLocation(program, "uSpecColor");
-	gl.uniform3fv(uSpecColor, [0.0, 0.0, 0.0]);
-	
-
-	// Ambient Constant
-	var uAmbientCons = gl.getUniformLocation(program, "uAmbientCons");
-	gl.uniform1f(uAmbientCons, 0.25);
-	// Diffuse Constant
-	var uDiffuseCons = gl.getUniformLocation(program, "uDiffuseCons");
-	gl.uniform1f(uDiffuseCons, 1.0);
-	// Specular Constant
-	var uSpecCons = gl.getUniformLocation(program, "uSpecCons");
-	gl.uniform1f(uSpecCons, 1.0);
-  
-	// Shininess Constant
-	var uShineCons = gl.getUniformLocation(program, "uShineCons");
-	gl.uniform1f(uShineCons, 95.0);
 
 	const uNormalMatrix = gl.getUniformLocation(program, "uNormalMatrix");
 	var normalModelViewMatrix = transpose(inverse(modelViewMatrix));
