@@ -150,6 +150,8 @@ function resetValue() {
 	texture_opt.value = 0;
 	const selectedProjection = document.getElementById("perspective");
 	selectedProjection.checked = true;
+	const selectedTexture = document.getElementById("none");
+	selectedTexture.checked = true;
 	shading_check.checked = true;
 	
 }
