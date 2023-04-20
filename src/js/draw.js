@@ -37,57 +37,63 @@ function main(loadedJson) {
 	// SHADER -> TAR GANTI BUATAN KITA
 	const vertexShaderSource = `
 	attribute vec3 aVertexPosition; 
-  	attribute vec3 aBarycentric;
-  	attribute vec3 aNormal;
+	attribute vec3 aNormal;
+	attribute vec3 aVertexColor; 
 
+	
 	uniform int textureVert;
-  
-	varying vec3 interpBary;
-	varying vec3 normalInterp;
-	varying vec3 vertPos;
-  
 	uniform mat4 uModelViewMatrix; 
 	uniform mat4 uProjectionMatrix; 
-  	uniform mat4 uNormalMatrix; 
-  
-	attribute vec3 aVertexColor; 
+	uniform mat4 uNormalMatrix; 
+	
 	uniform vec4 uVertexColor;
+	
+	varying vec3 normalInterp;
+	varying vec3 vertPos;
 
 	varying vec3 vWorldPosition;
     varying vec3 vWorldNormal;
+	varying lowp vec4 vColor;
+	
+	uniform bool uShading;
 
-  	varying lowp vec4 vColor;
+	  void main(void) {
+		if(!uShading){
+			vec4 vertPos4 = uModelViewMatrix * vec4(aVertexPosition, 1.0);
+			gl_Position = uProjectionMatrix * vertPos4;
 
-	void main(void) {
-		vec4 newModelViewMatrix = uModelViewMatrix * vec4(aVertexPosition, 1.0);
-		gl_Position = uProjectionMatrix * newModelViewMatrix;
-
-		vWorldPosition = (newModelViewMatrix).xyz;
-		vWorldNormal = mat3(uModelViewMatrix) * aNormal;
-    
-		vColor = vec4(aVertexColor, 1.0);
-
+			vWorldPosition = (vertPos4).xyz;
+			vWorldNormal = mat3(uModelViewMatrix) * aNormal;
+		
+			vColor = vec4(aVertexColor, 1.0);
+		}else{
+			vec4 vertPos4 = uModelViewMatrix * vec4(aVertexPosition, 1.0);
+			vertPos = vec3(vertPos4) / vertPos4.w;
+			normalInterp = vec3(uNormalMatrix * vec4(aNormal, 0.0));
+			gl_Position = uProjectionMatrix * vertPos4;
+		}
   }
 
 	`;
 	const fragmentShaderSource = `
-
-	precision mediump float;
-	varying vec3 normalInterp;
-	varying vec3 vertPos;
-	varying lowp vec4 vColor;
 	
-	uniform vec3 uLightPos;
-	uniform vec3 uAmbientColor;
-	uniform vec3 uDiffuseColor;
-	uniform vec3 uSpecColor;
-
-	uniform float uAmbientCons;
+	precision mediump float;
+	
+	uniform float uAmbientCons ;
 	uniform float uDiffuseCons;
 	uniform float uSpecCons;
 	uniform float uShineCons;
-
-  	uniform bool uShading;
+	
+	uniform vec3 uAmbientColor ;
+	uniform vec3 uDiffuseColor ;
+	uniform vec3 uSpecColor ;
+	uniform vec3 uLightPos ;
+	
+	uniform bool uShading;
+	
+	varying lowp vec4 vColor;
+	varying vec3 normalInterp;
+	varying vec3 vertPos;
 
 	varying vec3 vWorldPosition;
 	varying vec3 vWorldNormal;
@@ -95,33 +101,35 @@ function main(loadedJson) {
 	uniform samplerCube uTexture;
 
 	void main(void) {
-    if (uShading){
-      vec3 normal = normalize(normalInterp);
-      vec3 lightDir = normalize(uLightPos - vertPos);
-      vec3 reflectDir = reflect(-lightDir, normal);
-      vec3 viewDir = normalize(-vertPos);
+		if (uShading){
+			vec3 normal = normalize(normalInterp);
+			vec3 lightDir = normalize(uLightPos - vertPos);
+			vec3 reflectDir = reflect(-lightDir, normal);
+			vec3 viewDir = normalize(-vertPos);
 
-      float lambertian = max(dot(lightDir,normal), 0.0);
-      float specular = 0.0;
+			float lambertian = max(dot(normal,lightDir), 0.0);
+			float specular = 0.0;
 
-      if(lambertian > 0.0) {
-        float specAngle = max(dot(reflectDir, viewDir), 0.0);
-        specular = pow(specAngle, uShineCons);
-      }
+			if(lambertian > 0.0) {
+				vec3 R = reflect(-lightDir, normal);
+				vec3 V = normalize(-vertPos);
+				float specAngle = max(dot(R, V), 0.0);
+				specular = pow(specAngle, uShineCons);
+			}
 
-      gl_FragColor = vec4(
-        uAmbientCons * uAmbientColor + 
-        uDiffuseCons * lambertian * uDiffuseColor + 
-        uSpecCons * specular * uSpecColor, 1.0
-      );
+		gl_FragColor = vec4(
+			uAmbientCons * uAmbientColor + 
+			uDiffuseCons * lambertian * uDiffuseColor + 
+			uSpecCons * specular * uSpecColor, 1.0
+		);
 
-    }else{
-		vec3 worldNormal = normalize(vWorldNormal);
-		vec3 eyeToSurfaceDir = normalize(vWorldPosition);
-		vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
+		}else{
+			vec3 worldNormal = normalize(vWorldNormal);
+			vec3 eyeToSurfaceDir = normalize(vWorldPosition);
+			vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
 
-		gl_FragColor = textureCube(uTexture, direction);
-    }
+			gl_FragColor = textureCube(uTexture, direction);
+		}
 	}
 	`;
 
@@ -300,8 +308,42 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 	const uModelViewMatrix = gl.getUniformLocation(program, "uModelViewMatrix");
 	gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix);
 
+	//Light Position
+	var uLightPos = gl.getUniformLocation(program, "uLightPos");
+	gl.uniform3fv(uLightPos, [6.5,-1.0,1.5])
+	
+	// Ambient Color
+	var uAmbientColor = gl.getUniformLocation(program, "uAmbientColor");
+	gl.uniform3fv(uAmbientColor, [0.577, 0.577, 0.577]);
+	// Diffuse Color
+	var uDiffuseColor = gl.getUniformLocation(program, "uDiffuseColor");
+	gl.uniform3fv(uDiffuseColor, [0.0, 0.635, 0.773]);
+	// Specular Color
+	var uSpecColor = gl.getUniformLocation(program, "uSpecColor");
+	gl.uniform3fv(uSpecColor, [0.0, 0.0, 0.0]);
+	
+
+	// Ambient Constant
+	var uAmbientCons = gl.getUniformLocation(program, "uAmbientCons");
+	gl.uniform1f(uAmbientCons, 0.25);
+	// Diffuse Constant
+	var uDiffuseCons = gl.getUniformLocation(program, "uDiffuseCons");
+	gl.uniform1f(uDiffuseCons, 1.0);
+	// Specular Constant
+	var uSpecCons = gl.getUniformLocation(program, "uSpecCons");
+	gl.uniform1f(uSpecCons, 1.0);
+  
+	// Shininess Constant
+	var uShineCons = gl.getUniformLocation(program, "uShineCons");
+	gl.uniform1f(uShineCons, 95.0);
+
+	const uNormalMatrix = gl.getUniformLocation(program, "uNormalMatrix");
+	var normalModelViewMatrix = transpose(inverse(modelViewMatrix));
+	gl.uniformMatrix4fv(uNormalMatrix, false, normalModelViewMatrix);
+
 	var uShading = gl.getUniformLocation(program, "uShading");
 	gl.uniform1i(uShading, shading_check.checked);
+	
 	{
 		gl.drawElements(gl.TRIANGLES, model.ilength, gl.UNSIGNED_SHORT, 0);
 	}
@@ -434,101 +476,66 @@ function loadObject(gl, vertices, indices, color) {
 	gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(color), gl.STATIC_DRAW);
 	
-
-  var bary = []
-  var normal = []
-  indices.forEach(function(d,i){
-    if(i%3 == 0){
-      var setOfThreeIndices = indices.slice(i, i+3);
-      const v1Idx = setOfThreeIndices[0];
-      const v2Idx = setOfThreeIndices[1];
-      const v3Idx = setOfThreeIndices[2];
-      let v1 = [
-        vertices[v2Idx*3 + 0] - vertices[v1Idx*3 + 0],
-        vertices[v2Idx*3 + 1] - vertices[v1Idx*3 + 0],
-        vertices[v2Idx*3 + 2] - vertices[v1Idx*3 + 0]
-      ];
-      let v2 = [
-        vertices[v3Idx*3 + 0] - vertices[v1Idx*3 + 0],
-        vertices[v3Idx*3 + 0] - vertices[v1Idx*3 + 0],
-        vertices[v3Idx*3 + 0] - vertices[v1Idx*3 + 0]
-      ];
-      let n = [0, 0, 0];
-      n[0] = v1[1] * v2[2] - v1[2] * v2[1];
-      n[1] = v1[2] * v2[0] - v1[0] * v2[2];
-      n[2] = v1[0] * v2[1] - v1[1] * v2[0];
-
-      normal.push(n[0],n[1],n[2]);
-      bary.push(1,0,0);
-    } else if(i % 3 == 1){
-        bary.push(0,1,0);
-    } else if(i % 3 == 2){
-        bary.push(0,0,1);
-    }
-  });
- 
-  const barycentricBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, barycentricBuffer);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(bary), gl.STATIC_DRAW);
   
-  const normalBuffer = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-  var normals = new Float32Array(
-    [
-       0, 0, -1,
-       0, 0, -1,
-       0, 0, -1,
-       0, 0, -1,
-       0, 0, -1,
-       0, 0, -1,
-
-       0, 0, 1,
-       0, 0, 1,
-       0, 0, 1,
-       0, 0, 1,
-       0, 0, 1,
-       0, 0, 1,
-
-       0, 1, 0,
-       0, 1, 0,
-       0, 1, 0,
-       0, 1, 0,
-       0, 1, 0,
-       0, 1, 0,
-
-       0, -1, 0,
-       0, -1, 0,
-       0, -1, 0,
-       0, -1, 0,
-       0, -1, 0,
-       0, -1, 0,
-
-      -1, 0, 0,
-      -1, 0, 0,
-      -1, 0, 0,
-      -1, 0, 0,
-      -1, 0, 0,
-      -1, 0, 0,
-
-       1, 0, 0,
-       1, 0, 0,
-       1, 0, 0,
-       1, 0, 0,
-       1, 0, 0,
-       1, 0, 0,
-    ]);
-  gl.bufferData(gl.ARRAY_BUFFER, normals, gl.STATIC_DRAW);
+	const normalBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+	var normals = calculateNormals(vertices,indices)
+ 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
 	
-  return {
+  	return {
 		position: vertexBuffer,
 		indices: indexBuffer,
 		color: colorBuffer,
-    barycentric : barycentricBuffer,
-    normal : normalBuffer,
+    	normal : normalBuffer,
 		vlength: vertices.length,
 		ilength: indices.length,
 	};
 }
+
+function calculateNormals(vertices, indices) {
+	const vertexNormals = [];
+  
+	for (let i = 0; i < vertices.length; i += 3) {
+	  vertexNormals.push(0, 0, 0);
+	}
+  
+	for (let i = 0; i < indices.length; i += 3) {
+	  const a = indices[i] * 3;
+	  const b = indices[i + 1] * 3;
+	  const c = indices[i + 2] * 3;
+  
+	  const v1 = [vertices[b] - vertices[a], vertices[b + 1] - vertices[a + 1], vertices[b + 2] - vertices[a + 2]];
+	  const v2 = [vertices[c] - vertices[a], vertices[c + 1] - vertices[a + 1], vertices[c + 2] - vertices[a + 2]];
+	  const normal = [
+		v1[1] * v2[2] - v1[2] * v2[1],
+		v1[2] * v2[0] - v1[0] * v2[2],
+		v1[0] * v2[1] - v1[1] * v2[0],
+	  ];
+  
+	  vertexNormals[a] += normal[0];
+	  vertexNormals[a + 1] += normal[1];
+	  vertexNormals[a + 2] += normal[2];
+	  vertexNormals[b] += normal[0];
+	  vertexNormals[b + 1] += normal[1];
+	  vertexNormals[b + 2] += normal[2];
+	  vertexNormals[c] += normal[0];
+	  vertexNormals[c + 1] += normal[1];
+	  vertexNormals[c + 2] += normal[2];
+	}
+  
+	for (let i = 0; i < vertexNormals.length; i += 3) {
+	  const normal = [vertexNormals[i], vertexNormals[i + 1], vertexNormals[i + 2]];
+	  const magnitude = Math.sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+  
+	  if (magnitude > 0) {
+		vertexNormals[i] /= magnitude;
+		vertexNormals[i + 1] /= magnitude;
+		vertexNormals[i + 2] /= magnitude;
+	  }
+	}
+  
+	return vertexNormals;
+  }  
 
 function saveObjectfunction (loadedJson, allObjs) {
 
