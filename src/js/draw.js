@@ -119,10 +119,7 @@ function main(loadedJson) {
 			gl_FragColor = textureCube(uTexture, direction);
 			
 		} else if (textureVert == 3) {
-			vec4 baseColor = texture2D(uSampler, vTextureCoord);
-
-			gl_FragColor = baseColor;
-
+			gl_FragColor = texture2D(uBumpMap, vTextureCoord);
 		}
 		
 
@@ -316,10 +313,15 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 		gl.bindTexture(gl.TEXTURE_2D, curtomTexture);
 		gl.uniform1i(uSampler, 0);
 
-		var uTexture = gl.getUniformLocation(program, "uTexture");
+		const uTexture = gl.getUniformLocation(program, "uTexture");
 		gl.uniform1i(uTexture, 1);
 		gl.activeTexture(gl.TEXTURE1);
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, reflexTexture);
+
+		const uBumpMap = gl.getUniformLocation(program, "uBumpMap");
+		gl.uniform1i(uBumpMap, 2);
+		gl.activeTexture(gl.TEXTURE2);
+		gl.bindTexture(gl.TEXTURE_2D, bumpTexture);
 	}
 
 	const uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
