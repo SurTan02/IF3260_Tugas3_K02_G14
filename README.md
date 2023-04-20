@@ -11,8 +11,9 @@ Website yang dapat menerima inputan articulated model 3D dan menampilkannya meng
 ## How to run
 
 1. Clone repository
-2. Buka file index.html yang terdapat pada folder src menggunakan web browser yang support WebGL.
+2. Buka file index.html yang terdapat pada folder src menggunakan web browser yang support WebGL (Disarankan menggunakan httpserver / liveserver).
 
+Dapat juga diakses lansung melalui if-3260-tugas3-k02-g14.vercel.app
 ## Fitur
 
 
