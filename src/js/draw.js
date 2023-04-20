@@ -135,9 +135,9 @@ function main(loadedJson) {
 	}
 	`;
 
-	if (!loadedJson.url) loadedJson.url = "../../assets/imageMap/sheep2.jpg"
+	if (!loadedJson.url) loadedJson.url = "../assets/imageMap/sheep2.jpg"
 	curtomTexture = loadCustomTexture(gl, loadedJson.url)
-	bumpTexture = loadCustomTexture(gl, "../../assets/imageMap/sheep2.jpg")
+	bumpTexture = loadCustomTexture(gl, "../assets/bumpMap/bump_normal.png")
 	reflexTexture = loadTextureReflective(gl)
 	const program = initShaders(gl, vertexShaderSource, fragmentShaderSource);
 	
