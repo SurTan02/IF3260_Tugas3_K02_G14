@@ -119,7 +119,7 @@ function main(loadedJson) {
 			gl_FragColor = textureCube(uTexture, direction);
 			
 		} else if (textureVert == 3) {
-			vec4 baseColor = texture2D(uSampler, vTextureCoord);
+			vec4 baseColor = texture2D(uBumpMap, vTextureCoord);
 
 			gl_FragColor = baseColor;
 
