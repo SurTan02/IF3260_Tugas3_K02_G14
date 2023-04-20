@@ -1,7 +1,7 @@
 {
 	"model_name" : "blaze",
 	"root_name" : "body",
-	"url" : "../../assets/imageMap/blaze.jpg",
+	"url" : "../assets/imageMap/blaze.jpg",
 	"rotation" : [0,0,0],
 	"translation" : [0,0,0],
 	"scaling" : [1, 1, 1],

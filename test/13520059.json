@@ -1,7 +1,7 @@
 {
     "model_name" : "human",
     "root_name" : "body",
-    "url" : "../../assets/imageMap/iron.png",
+    "url" : "../assets/imageMap/iron.png",
     "rotation" : [0, 0, 0],
     "translation" : [0, 0, 0],
     "scaling" : [1, 1, 1],

@@ -1,7 +1,7 @@
 {
   "model_name" : "sheep",
   "root_name" : "body",
-  "url" : "../../assets/imageMap/sheep2.jpg",
+  "url" : "../assets/imageMap/sheep.jpg",
   "rotation" : [0, 0, 0],
   "translation" : [0, 0, 0],
   "scaling" : [1, 1, 1],
