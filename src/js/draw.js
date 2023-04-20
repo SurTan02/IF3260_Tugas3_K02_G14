@@ -58,14 +58,13 @@ function main(loadedJson) {
 	uniform bool uShading;
 
 	  void main(void) {
+		vColor = vec4(aVertexColor, 1.0);
 		if(!uShading){
 			vec4 vertPos4 = uModelViewMatrix * vec4(aVertexPosition, 1.0);
 			gl_Position = uProjectionMatrix * vertPos4;
 
 			vWorldPosition = (vertPos4).xyz;
 			vWorldNormal = mat3(uModelViewMatrix) * aNormal;
-		
-			vColor = vec4(aVertexColor, 1.0);
 		}else{
 			vec4 vertPos4 = uModelViewMatrix * vec4(aVertexPosition, 1.0);
 			vertPos = vec3(vertPos4) / vertPos4.w;
@@ -310,7 +309,7 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 
 	//Light Position
 	var uLightPos = gl.getUniformLocation(program, "uLightPos");
-	gl.uniform3fv(uLightPos, [6.5,-1.0,1.5])
+	gl.uniform3fv(uLightPos, [1, 2 , 5])
 	
 	// Ambient Color
 	var uAmbientColor = gl.getUniformLocation(program, "uAmbientColor");
