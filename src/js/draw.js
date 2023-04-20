@@ -25,10 +25,11 @@ function main(loadedJson) {
 		allObjs[part.name] = part
 	});
 
-	tree_controller.innerHTML = ''
-	Object.keys(allObjs).forEach(part => {
-		tree_controller.innerHTML += `<button onclick="selectPart(event)" name=${allObjs[part].name}> ${allObjs[part].name}</button>`
-	});
+	tree_controller.innerHTML = `
+		<button style="margin-left: 0px;" onclick="selectPart(event)" name=${allObjs[baseObject].name}> ${allObjs[baseObject].name}</button>
+		<br>	
+	`
+	generateTree(allObjs[baseObject], 20)
 
 	const canvas = document.getElementById("canvas");
 	const gl = canvas.getContext("webgl");
@@ -613,6 +614,16 @@ function animationFrame(){
 			}
 		}
 	}
+}
+
+function generateTree(obj, indent){
+	obj.children.forEach(part => {
+		tree_controller.innerHTML += `
+			<button style="margin-left: ${indent}px;" onclick="selectPart(event)" name=${allObjs[part].name}> ${allObjs[part].name}</button>
+			<br>	
+		`
+		generateTree(allObjs[part], indent + 20)
+	});
 }
 
 var animation_loop_dir = true;
