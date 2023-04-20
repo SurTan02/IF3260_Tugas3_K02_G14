@@ -167,5 +167,4 @@ texture_opt.onchange = function () {
 		'input[name="texture-option"]:checked'
 	).value;
 	this.value = selectedTexture;
-	console.log("aa", selectedTexture);
 };

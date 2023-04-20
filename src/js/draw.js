@@ -3,6 +3,8 @@ var timer = 0;
 
 var allObjs;
 let baseObject 
+let curtomTexture
+let reflexTexture
 
 main(jsonObjTes)
 
@@ -40,9 +42,8 @@ function main(loadedJson) {
 	attribute vec3 aVertexPosition; 
 	attribute vec3 aNormal;
 	attribute vec3 aVertexColor; 
-
+	attribute vec2 aTextureCoord;
 	
-	uniform int textureVert;
 	uniform mat4 uModelViewMatrix; 
 	uniform mat4 uProjectionMatrix; 
 	uniform mat4 uNormalMatrix; 
@@ -55,22 +56,26 @@ function main(loadedJson) {
 	varying vec3 vWorldPosition;
     varying vec3 vWorldNormal;
 	varying lowp vec4 vColor;
+	varying highp vec2 vTextureCoord;
 	
 	uniform bool uShading;
 
 	  void main(void) {
 		vColor = vec4(aVertexColor, 1.0);
-		if(!uShading){
+
+		
 			vec4 vertPos4 = uModelViewMatrix * vec4(aVertexPosition, 1.0);
 			gl_Position = uProjectionMatrix * vertPos4;
 
 			vWorldPosition = (vertPos4).xyz;
 			vWorldNormal = mat3(uModelViewMatrix) * aNormal;
-		}else{
-			vec4 vertPos4 = uModelViewMatrix * vec4(aVertexPosition, 1.0);
+
+			vTextureCoord = aTextureCoord;
+
+			
+		if (uShading){
 			vertPos = vec3(vertPos4) / vertPos4.w;
 			normalInterp = vec3(uNormalMatrix * vec4(aNormal, 0.0));
-			gl_Position = uProjectionMatrix * vertPos4;
 		}
   }
 
@@ -95,12 +100,28 @@ function main(loadedJson) {
 	varying vec3 normalInterp;
 	varying vec3 vertPos;
 
+
+	uniform int textureVert;
 	varying vec3 vWorldPosition;
 	varying vec3 vWorldNormal;
 
+    uniform sampler2D uSampler;
 	uniform samplerCube uTexture;
 
+	varying highp vec2 vTextureCoord;
 	void main(void) {
+		
+		if(textureVert == 2){
+			vec3 worldNormal = normalize(vWorldNormal);
+			vec3 eyeToSurfaceDir = normalize(vWorldPosition);
+			vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
+
+			gl_FragColor = textureCube(uTexture, direction);
+		} else if (textureVert == 1){
+			gl_FragColor = texture2D(uSampler, vTextureCoord);
+		}
+		
+
 		if (uShading){
 			vec3 normal = normalize(normalInterp);
 			vec3 lightDir = normalize(uLightPos - vertPos);
@@ -117,23 +138,19 @@ function main(loadedJson) {
 				specular = pow(specAngle, uShineCons);
 			}
 
-		gl_FragColor = vec4(
-			uAmbientCons * uAmbientColor + 
-			uDiffuseCons * lambertian * uDiffuseColor + 
-			uSpecCons * specular * uSpecColor, 1.0
-		);
-
-		}else{
-			vec3 worldNormal = normalize(vWorldNormal);
-			vec3 eyeToSurfaceDir = normalize(vWorldPosition);
-			vec3 direction = reflect(eyeToSurfaceDir,worldNormal);
-
-			gl_FragColor = textureCube(uTexture, direction);
+			gl_FragColor = vec4(
+				uAmbientCons * uAmbientColor + 
+				uDiffuseCons * lambertian * uDiffuseColor + 
+				uSpecCons * specular * uSpecColor, 1.0
+			);
 		}
+		
 	}
 	`;
 
-	loadTextureReflective(gl)
+	if (!loadedJson.url) loadedJson.url = "../../assets/imageMap/iron.png"
+	curtomTexture = loadCustomTexture(gl, loadedJson.url)
+	reflexTexture = loadTextureReflective(gl)
 	const program = initShaders(gl, vertexShaderSource, fragmentShaderSource);
 	
 	// Draw the scene
@@ -298,9 +315,27 @@ function drawObject(gl, program, currentObject, allObjs, parent_rotation, parent
 		gl.bindBuffer(gl.ARRAY_BUFFER, model.normal);
 		gl.vertexAttribPointer(aNormal, 3, gl.FLOAT, false, 0, 0);
 
+		const textureVert = gl.getUniformLocation(program, "textureVert");
+		gl.uniform1i(textureVert, parseInt(texture_opt.value));
+		
+		const aTextureCoord = gl.getAttribLocation(program, "aTextureCoord");
+		gl.enableVertexAttribArray(aTextureCoord);
+		gl.bindBuffer(gl.ARRAY_BUFFER, model.texture_coord);
+		gl.vertexAttribPointer(aTextureCoord, 2, gl.FLOAT, false, 0, 0);
+
+		const uSampler =  gl.getUniformLocation(program, "uSampler");
+		gl.activeTexture(gl.TEXTURE0);
+		gl.bindTexture(gl.TEXTURE_2D, curtomTexture);
+		gl.uniform1i(uSampler, 0);
+
 		var uTexture = gl.getUniformLocation(program, "uTexture");
-		gl.uniform1i(uTexture, 0);
+		gl.uniform1i(uTexture, 1);
+		gl.activeTexture(gl.TEXTURE1);
+		gl.bindTexture(gl.TEXTURE_CUBE_MAP, reflexTexture);
 	}
+
+	
+	// gl.uniform1i(textureVert, 1);
 
 	const uProjectionMatrix = gl.getUniformLocation(program, "uProjectionMatrix");
 	gl.uniformMatrix4fv(uProjectionMatrix, false, newProjection);
@@ -382,72 +417,7 @@ function loadShader(gl, type, source) {
 	return shader;
 }
 
-function loadTextureReflective(gl) {
-	var texture = gl.createTexture();
-  	gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
 
-	const faceInfos = [
-	{
-		target: gl.TEXTURE_CUBE_MAP_POSITIVE_X,
-		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/pos-x.jpg',
-	},
-	{
-		target: gl.TEXTURE_CUBE_MAP_NEGATIVE_X,
-		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/neg-x.jpg',
-	},
-	{
-		target: gl.TEXTURE_CUBE_MAP_POSITIVE_Y,
-		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/pos-y.jpg',
-	},
-	{
-		target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Y,
-		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/neg-y.jpg',
-	},
-	{
-		target: gl.TEXTURE_CUBE_MAP_POSITIVE_Z,
-		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/pos-z.jpg',
-	},
-	{
-		target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z,
-		url: 'https://webglfundamentals.org/webgl/resources/images/computer-history-museum/neg-z.jpg',
-	},
-	];
-	
-	faceInfos.forEach((face) => {
-		const {target, url} = face;
-	
-		const level = 0;
-		const internalFormat = gl.RGBA;
-		const width = 512;
-		const height = 512;
-		const border = 0;
-		const srcFormat = gl.RGBA;
-		const srcType = gl.UNSIGNED_BYTE;
-	
-		gl.texImage2D(
-			target,
-			level,
-			internalFormat,
-			width,
-			height,
-			border,
-			srcFormat,
-			srcType,
-			null
-		);
-	
-		const image = new Image();
-		image.crossOrigin = "anonymous";
-		image.onload = () => {
-			gl.bindTexture(gl.TEXTURE_CUBE_MAP, texture);
-			gl.texImage2D(target, level, internalFormat, srcFormat, srcType, image);
-			gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-		};
-		image.src = url;
-	});  
-	gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-	gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-  }
 
 // Initialize object
 function loadObject(gl, vertices, indices, color) {
@@ -482,11 +452,30 @@ function loadObject(gl, vertices, indices, color) {
 	var normals = calculateNormals(vertices,indices)
  	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
 	
+	let textureCoordinates = [
+		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+
+		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+
+		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+
+		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+
+		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+
+		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	];
+
+	const textureCoordBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
+
   	return {
 		position: vertexBuffer,
 		indices: indexBuffer,
 		color: colorBuffer,
     	normal : normalBuffer,
+		texture_coord: textureCoordBuffer,
 		vlength: vertices.length,
 		ilength: indices.length,
 	};
