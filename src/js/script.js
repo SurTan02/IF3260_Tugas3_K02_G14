@@ -101,17 +101,30 @@ resetCamera.onclick = function (e) {
 
 
 function resetValue() {
+	animation_reverse.checked = false;
+	animation_loop.checked = false;
+	play_animation = false;
 	tx = 0;
 	ty = 0;
 	tz = 0;
 	rx = 5.78;
 	ry = 3.8;
 	rz = 0;
+	part_tx = 0;
+	part_ty = 0;
+	part_tz = 0;
+	part_rx = 5.78;
+	part_ry = 3.8;
+	part_rz = 0;
+
 	sx = 1;
 	sy = 1;
 	sz = 1;
 	yc = 0;
 	zc = 1;
+	frame_counter = 0;
+	play_animation = false;
+	animation_speed_interval = 10;
 
 	slider_tx.value = tx;
 	slider_ty.value = ty;
@@ -122,15 +135,24 @@ function resetValue() {
 	slider_rx.value = rx;
 	slider_ry.value = ry;
 	slider_rz.value = rz;
+
+	slider_part_tx.value = tx;
+	slider_part_ty.value = ty;
+	slider_part_tz.value = tz;
+	slider_part_rx.value = rx;
+	slider_part_ry.value = ry;
+	slider_part_rz.value = rz;
+
 	slider_yc.value = yc;
 	slider_zc.value = zc;
+	animation_speed.value = animation_speed_interval;
 	projection_opt.value = "perspective";
 	const selectedProjection = document.getElementById("perspective");
 	selectedProjection.checked = true;
 	const selectedTexture = document.getElementById("custom");
 	selectedTexture.checked = true;
 	shading_check.checked = false;
-	animation_play.checked = false;
+	
 }
 
 projection_opt.onchange = function () {
